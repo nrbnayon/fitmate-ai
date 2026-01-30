@@ -19,6 +19,7 @@ import { useAppDispatch } from "@/redux/hooks";
 import { setCredentials } from "@/redux/features/authSlice";
 import { toast } from "sonner";
 import { loginValidationSchema } from "@/lib/formDataValidation";
+import { RightSideImage } from "./RightSideImage";
 
 type FormValues = z.infer<typeof loginValidationSchema>;
 
@@ -43,9 +44,6 @@ export const SignInForm = () => {
       rememberMe: false,
     },
   });
-
-  const emailValue = watch("email");
-  const passwordValue = watch("password");
 
   // Trim spaces in real-time for email & password
   const handleTrimChange = (field: "email" | "password") => (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -103,7 +101,7 @@ export const SignInForm = () => {
   };
 
   return (
-    <div className="relative min-h-screen w-full flex flex-col lg:flex-row">
+    <div className="relative h-screen w-full flex flex-col lg:flex-row">
       {/* Left - Form */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -113,8 +111,8 @@ export const SignInForm = () => {
       >
         <div className="w-full max-w-md lg:max-w-lg space-y-8">
           {/* Logo + Title */}
-          <div className="text-center space-y-4">
-            <div className="flex justify-center">
+          <div className="text-center space-y-3">
+            <div className="flex justify-center mb-6 md:mb-8">
               <Image
                 src="/icons/logo.svg"
                 alt="Xandra Logo"
@@ -124,8 +122,8 @@ export const SignInForm = () => {
                 priority
               />
             </div>
-            <h1 className="text-3xl sm:text-4xl font-bold text-gray-900">Log In</h1>
-            <p className="text-base sm:text-lg text-gray-500">
+            <h1 className="text-2xl sm:text-3xl font-semibold text-foreground">Log In</h1>
+            <p className="text-lg sm:text-xl text-secondary">
               Please login to continue to your account.
             </p>
           </div>
@@ -138,7 +136,8 @@ export const SignInForm = () => {
               type="email"
               autoComplete="email"
               error={errors.email?.message}
-              className="h-14 rounded-full border-2 border-gray-300/80 focus:border-primary focus:ring-0 px-6 text-base"
+              labelClassName="text-secondary"
+              className="h-14 rounded-full border-2 focus:border-primary focus:ring-0 px-6 text-base"
               {...register("email")}
               onChange={handleTrimChange("email")}
             />
@@ -150,7 +149,8 @@ export const SignInForm = () => {
                 type={showPassword ? "text" : "password"}
                 autoComplete="current-password"
                 error={errors.password?.message}
-                className="h-14 rounded-full border-2 border-gray-300/80 focus:border-primary focus:ring-0 px-6 pr-14 text-base"
+                labelClassName="text-secondary"
+                className="h-14 rounded-full border-2 focus:border-primary focus:ring-0 px-6 pr-14 text-base"
                 {...register("password")}
                 onChange={handleTrimChange("password")}
               />
@@ -172,13 +172,13 @@ export const SignInForm = () => {
                 <div className="flex items-center gap-3">
                   <Checkbox
                     id="rememberMe"
-                    className="h-5 w-5 border-2 border-gray-300 data-[state=checked]:bg-primary data-[state=checked]:border-primary rounded"
+                    className="h-5 w-5 border-2 data-[state=checked]:bg-primary data-[state=checked]:border-primary rounded"
                     checked={field.value}
                     onCheckedChange={field.onChange}
                   />
                   <Label
                     htmlFor="rememberMe"
-                    className="text-sm sm:text-base text-gray-600 cursor-pointer font-normal select-none"
+                    className="text-sm sm:text-base text-secondary cursor-pointer font-normal select-none"
                   >
                     Keep me logged in
                   </Label>
@@ -204,7 +204,7 @@ export const SignInForm = () => {
 
             {/* Forgot password */}
             <div className="text-center text-sm sm:text-base">
-              <span className="text-gray-600">Forgot Password? </span>
+              <span className="text-secondary">Forgot Password? </span>
               <Link
                 href="/forgot-password"
                 className="text-primary font-semibold hover:text-primary/80 hover:underline transition-colors"
@@ -217,24 +217,7 @@ export const SignInForm = () => {
       </motion.div>
 
       {/* Right - Image (hidden on mobile) */}
-      <motion.div
-        initial={{ opacity: 0, x: 30 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.8, delay: 0.2 }}
-        className="hidden lg:block lg:flex-1 relative min-h-screen overflow-hidden"
-      >
-        {/* Optional subtle overlay gradient */}
-        <div className="absolute inset-0 bg-gradient-to-br from-pink-500/10 via-transparent to-purple-500/10 z-10 pointer-events-none" />
-
-        <Image
-          src="/images/right_auth.png"
-          alt="Xandra - Beauty & Auth"
-          fill
-          className="object-cover object-center"
-          priority
-          sizes="(min-width: 1024px) 50vw, 0"
-        />
-      </motion.div>
+      <RightSideImage />
     </div>
   );
 };

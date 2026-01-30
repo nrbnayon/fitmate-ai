@@ -5,6 +5,10 @@ import { cn } from "@/lib/utils";
 interface FloatingInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label: string;
   /**
+   * Optional: additional classes for the label
+   */
+  labelClassName?: string;
+  /**
    * When true → full rounded border (like outlined input)
    * When false → only bottom border (like underline / minimal style)
    */
@@ -21,6 +25,7 @@ const FloatingInput = React.forwardRef<HTMLInputElement, FloatingInputProps>(
     {
       className,
       label,
+      labelClassName,
       isLabelBorder = true,
       error,
       type = "text",
@@ -62,7 +67,6 @@ const FloatingInput = React.forwardRef<HTMLInputElement, FloatingInputProps>(
             "peer w-full bg-transparent outline-none transition-all duration-200",
             inputHeight,
             "px-4 text-base leading-none",
-            // Remove default browser padding that breaks centering
             "py-0",
 
             // Border styles
@@ -108,14 +112,16 @@ const FloatingInput = React.forwardRef<HTMLInputElement, FloatingInputProps>(
               (isLabelBorder
                 ? cn(
                     "top-0 -translate-y-1/2 text-xs font-medium px-1.5 bg-background",
-                    // Make sure label background covers border when floating
                     isLabelBorder && "peer-focus:text-primary"
                   )
                 : cn("top-2 text-xs font-medium")),
 
-            // Color overrides
+            // Color overrides (only apply if no error)
             isFocused && !error && "text-primary",
-            error && "text-destructive"
+            error && "text-destructive",
+            
+            // Allow custom label classes to override default colors when inactive
+            !isActive && !error && labelClassName
           )}
         >
           {label}
