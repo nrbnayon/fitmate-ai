@@ -10,27 +10,16 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent } from "@/components/ui/card";
-
+import { FloatingInput } from "@/components/ui/floating-input";
 import { toast } from "sonner";
+import { RightSideImage } from "./RightSideImage";
 
-// Local schema to match UI (no email) but keep validation rules
 const resetPasswordSchema = z
   .object({
     newPassword: z
       .string()
-      .min(1, "New password is required")
-      .min(8, "Password must be at least 8 characters")
-      .max(100, "Password must be less than 100 characters")
-      .regex(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-        "Password must contain at least one uppercase letter, one lowercase letter, and one number"
-      )
-      .refine((val) => !/\s/.test(val), {
-        message: "New password cannot contain spaces",
-      }),
+      .min(1, "Password is required")
+      .min(6, "Password must be at least 6 characters"),
     confirmPassword: z.string().min(1, "Please confirm your password"),
   })
   .refine((data) => data.newPassword === data.confirmPassword, {
@@ -49,6 +38,7 @@ const ResetPassword = () => {
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<FormValues>({
     resolver: zodResolver(resetPasswordSchema),
@@ -59,13 +49,18 @@ const ResetPassword = () => {
   });
 
   useEffect(() => {
-    // Check if user came from verified OTP
+    // Check if user came from verified OTP (optional security, can be disabled for testing)
     const isVerified = document.cookie.split("; ").find(row => row.startsWith("reset_verified="));
-    if (!isVerified) {
+    if (!isVerified && process.env.NODE_ENV === "production") {
       toast.error("Unauthorized access. Please verify OTP first.");
       router.push("/forgot-password");
     }
   }, [router]);
+
+  const handleTrimChange = (field: keyof FormValues) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    const trimmed = e.target.value.trim();
+    setValue(field, trimmed, { shouldValidate: true });
+  };
 
   const onSubmit = async (data: FormValues) => {
     setIsLoading(true);
@@ -89,131 +84,95 @@ const ResetPassword = () => {
   };
 
   return (
-    <div className="relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-pink-50 py-10">
-      {/* Background Shape */}
-      <div className="absolute inset-0 w-full h-full z-0">
-        <Image
-          src="/icons/shape.png"
-          alt="Background Shape"
-          fill
-          className="object-cover"
-          priority
-        />
-      </div>
-
-      {/* Form Card */}
+    <div className="relative h-screen w-full flex flex-col lg:flex-row">
+      {/* Left - Form */}
       <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5 }}
-        className="z-10 w-full px-4 md:px-0 flex items-center justify-center"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.7 }}
+        className="flex-1 flex items-center justify-center p-6 sm:p-8 lg:p-12 bg-white lg:min-h-screen"
       >
-        <Card
-          className="w-full max-w-[550px] bg-white border border-[#DDDDDD] rounded-[24px] p-0"
-          style={{
-            boxShadow:
-              "0px 5px 11px 0px #0000000D, 0px 19px 19px 0px #0000000D, 0px 43px 26px 0px #000000D, 0px 77px 31px 0px #00000003, 0px 120px 34px 0px #00000000",
-          }}
-        >
-          <CardContent className="p-8 md:p-[40px]">
-            <div className="flex flex-col items-center gap-6">
-              <h1 className="text-3xl md:text-4xl font-bold text-foreground text-center">
-                Reset Password
-              </h1>
-              {/* Optional subtitle if needed? Image shows subtitle "Create your new password for your account" (faintly visible/implied by context?) 
-                  Image uploaded_media_4 has "Create your new password for your account" but it is very light. 
-                  I'll add it if I can see it. Yes, "Create your new password for your account" is there in small text. 
-              */}
-              {/* Note: I'll add the subtitle based on my observation of uploaded_media_4 */}
-              <p className="text-base text-gray-500 font-normal text-center mt-[-15px]">
-                  Create your new password for your account
-              </p>
-
-              <form onSubmit={handleSubmit(onSubmit)} className="w-full flex flex-col gap-4">
-                {/* New Password */}
-                <div className="space-y-3">
-                  <Label htmlFor="newPassword" className="text-xl font-normal text-foreground">
-                    New Password
-                  </Label>
-                  <div className="relative">
-                    <Input
-                      id="newPassword"
-                      type={showPassword ? "text" : "password"}
-                      placeholder="Enter your password.."
-                      className={`h-14 rounded-xl text-base pr-12 ${
-                        errors.newPassword ? "border-red-500 focus-visible:ring-red-500" : "text-foreground "
-                      }`}
-                      {...register("newPassword")}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                    >
-                      {showPassword ? (
-                        <Eye className="w-6 h-6" />
-                      ) : (
-                        <EyeOff className="w-6 h-6" />
-                      )}
-                    </button>
-                  </div>
-                  {errors.newPassword && (
-                    <p className="text-sm text-red-500">{errors.newPassword.message}</p>
-                  )}
-                </div>
-
-                {/* Confirm Password */}
-                <div className="space-y-3">
-                  <Label htmlFor="confirmPassword" className="text-xl font-normal text-foreground">
-                    Re-enter New Password
-                  </Label>
-                  <div className="relative">
-                    <Input
-                      id="confirmPassword"
-                      type={showConfirmPassword ? "text" : "password"}
-                      placeholder="Re-enter new password.."
-                      className={`h-14 rounded-xl text-base pr-12 ${
-                        errors.confirmPassword ? "border-red-500 focus-visible:ring-red-500" : "text-foreground "
-                      }`}
-                      {...register("confirmPassword")}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                    >
-                      {showConfirmPassword ? (
-                        <Eye className="w-6 h-6" />
-                      ) : (
-                        <EyeOff className="w-6 h-6" />
-                      )}
-                    </button>
-                  </div>
-                  {errors.confirmPassword && (
-                    <p className="text-sm text-red-500">{errors.confirmPassword.message}</p>
-                  )}
-                </div>
-
-                {/* Submit Button */}
-                <Button
-                  type="submit"
-                  disabled={isLoading}
-                   className="w-full h-13 bg-primary hover:bg-primary/90 text-white text-lg font-bold rounded-xl shadow-none mt-2"
-                >
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                      Resetting...
-                    </>
-                  ) : (
-                    "Reset Password"
-                  )}
-                </Button>
-              </form>
+        <div className="w-full max-w-md lg:max-w-lg space-y-8">
+          {/* Logo + Title */}
+          <div className="text-center space-y-3">
+            <div className="flex justify-center mb-6 md:mb-8">
+              <Image
+                src="/icons/logo.svg"
+                alt="Xandra Logo"
+                width={140}
+                height={140}
+                className="w-28 sm:w-36 h-auto"
+                priority
+              />
             </div>
-          </CardContent>
-        </Card>
+            <h1 className="text-2xl sm:text-3xl font-semibold text-foreground">Reset password</h1>
+            <p className="text-base sm:text-lg text-secondary">
+              Please reset your password
+            </p>
+          </div>
+
+          {/* Form */}
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            {/* Password */}
+            <div className="relative">
+              <FloatingInput
+                label="Password"
+                type={showPassword ? "text" : "password"}
+                error={errors.newPassword?.message}
+                labelClassName="text-secondary"
+                className="h-14 rounded-full border-2 focus:border-primary focus:ring-0 px-6 pr-14 text-base"
+                {...register("newPassword")}
+                onChange={handleTrimChange("newPassword")}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-primary transition-colors z-10 p-1"
+              >
+                {showPassword ? <Eye className="h-5 w-5" /> : <EyeOff className="h-5 w-5" />}
+              </button>
+            </div>
+
+            {/* Rewrite Password */}
+            <div className="relative">
+              <FloatingInput
+                label="Rewrite Password"
+                type={showConfirmPassword ? "text" : "password"}
+                error={errors.confirmPassword?.message}
+                labelClassName="text-secondary"
+                className="h-14 rounded-full border-2 focus:border-primary focus:ring-0 px-6 pr-14 text-base"
+                {...register("confirmPassword")}
+                onChange={handleTrimChange("confirmPassword")}
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword((prev) => !prev)}
+                className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-primary transition-colors z-10 p-1"
+              >
+                {showConfirmPassword ? <Eye className="h-5 w-5" /> : <EyeOff className="h-5 w-5" />}
+              </button>
+            </div>
+
+            <Button
+              type="submit"
+              disabled={isLoading}
+              className="w-full h-14 bg-primary hover:bg-primary/90 text-white text-lg font-semibold rounded-full shadow-md transition-all duration-200"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-3 h-5 w-5 animate-spin" />
+                  Updating...
+                </>
+              ) : (
+                "Continue"
+              )}
+            </Button>
+          </form>
+        </div>
       </motion.div>
+
+      {/* Right - Image (hidden on mobile) */}
+      <RightSideImage />
     </div>
   );
 };

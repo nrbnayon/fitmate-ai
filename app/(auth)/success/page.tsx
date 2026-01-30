@@ -1,50 +1,54 @@
+"use client";
 
 import Link from "next/link";
 import Image from "next/image";
+import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { RightSideImage } from "@/components/Auth/RightSideImage";
 
-export default function CongratulationsPage() {
+export default function SuccessPage() {
   return (
-    <div className="bg-white w-full min-h-screen flex flex-col lg:flex-row">
-      <aside className="hidden lg:flex w-full lg:w-[45%] xl:w-1/2 h-full lg:min-h-screen relative flex-col items-center justify-center gap-8 lg:gap-16 bg-[#DDEFFC] lg:rounded-[0px_16px_16px_0px] overflow-hidden px-6 py-12">
-        <div className="relative w-16 h-16 lg:w-195 lg:h-150">
-          <img
-            className="absolute top-0 left-0 w-16 h-16 lg:w-195 lg:h-150"
-            alt="Logo icon"
-            src="/icons/success.svg"
-          />
-        </div>
-        <div className="top-[-200px] lg:top-[-373px] left-[-150px] lg:left-[-257px] absolute w-[600px] lg:w-[850px] h-[350px] lg:h-[496px] bg-[#1d92ed99] rounded-[300px/175px] lg:rounded-[425px/248px] blur-[100px]" />
-        <div className="bottom-[-200px] lg:bottom-[-92px] right-[-150px] lg:right-[-267px] absolute w-[200px] lg:w-[850px] h-[100px] lg:h-[150px] bg-[#1d92ed99] rounded-[300px/175px] lg:rounded-[425px/248px] blur-[100px]" />
-      </aside>
+    <div className="relative h-screen w-full flex flex-col lg:flex-row">
+      {/* Left - Content */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.7 }}
+        className="flex-1 flex items-center justify-center p-6 sm:p-8 lg:p-12 bg-white lg:min-h-screen"
+      >
+        <div className="w-full max-w-md lg:max-w-lg space-y-8 text-center">
+          {/* Logo */}
+          <div className="flex justify-center mb-6 md:mb-8">
+            <Image
+              src="/icons/logo.svg"
+              alt="Xandra Logo"
+              width={140}
+              height={140}
+              className="w-28 sm:w-36 h-auto"
+              priority
+            />
+          </div>
 
-      {/* ------------- Right side ------------- */}
-      <div className="flex w-full lg:w-1/2 min-h-screen relative flex-col items-center justify-center gap-8 lg:gap-12 px-6 py-12 lg:px-8 xl:px-12">
-        <div className="w-full max-w-sm sm:max-w-md lg:max-w-xl p-4 py-6 rounded-sm sm:rounded-xl border-none shadow-none bg-white">
-          <div className="text-center relative mb-2">
-            <div className="flex items-center justify-center mb-2 sm:mb-10">
-              <div className="w-full flex justify-center items-center">
-                <Image
-                  src="/icons/logo.svg"
-                  alt="logo"
-                  width={200}
-                  height={150}
-                />
-              </div>
-            </div>
-            <h1 className="text-3xl lg:text-5xl font-bold text-primary mb-6">
-              Congratulations !
-            </h1>
-            <h2 className="text-base text-secondary mb-10 px-5 mx-auto">
+          <div className="space-y-4">
+            <h1 className="text-3xl sm:text-4xl font-bold text-primary">Congratulations!</h1>
+            <p className="text-lg sm:text-xl text-secondary max-w-sm mx-auto">
               Your account has been created successfully. Log in to explore more.
-            </h2>
+            </p>
           </div>
-          <div className="w-full flex justify-center items-center">
-            <Link href='/login' className="flex w-65 items-center justify-center py-2.5 text-white bg-primary rounded-full">
-              Login
-            </Link>
+
+          <div className="pt-4">
+            <Button
+              asChild
+              className="w-full h-14 bg-primary hover:bg-primary/90 text-white text-lg font-semibold rounded-full shadow-md transition-all duration-200 truncate"
+            >
+              <Link href="/signin">Log In</Link>
+            </Button>
           </div>
         </div>
-      </div>
+      </motion.div>
+
+      {/* Right - Image */}
+      <RightSideImage />
     </div>
   );
 }

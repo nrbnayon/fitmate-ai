@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -10,22 +10,22 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent } from "@/components/ui/card";
-
+import { FloatingInput } from "@/components/ui/floating-input";
 import { toast } from "sonner";
 import { emailValidationSchema } from "@/lib/formDataValidation";
+import { RightSideImage } from "./RightSideImage";
 
 type FormValues = z.infer<typeof emailValidationSchema>;
 
 const ForgetPassword = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const [countdown, setCountdown] = useState(41);
   const router = useRouter();
 
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<FormValues>({
     resolver: zodResolver(emailValidationSchema),
@@ -33,6 +33,19 @@ const ForgetPassword = () => {
       email: "",
     },
   });
+
+  // Simple countdown effect
+  useEffect(() => {
+    if (countdown > 0) {
+      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [countdown]);
+
+  const handleTrimChange = (field: "email") => (e: React.ChangeEvent<HTMLInputElement>) => {
+    const trimmed = e.target.value.trim();
+    setValue(field, trimmed, { shouldValidate: true });
+  };
 
   const onSubmit = async (data: FormValues) => {
     setIsLoading(true);
@@ -42,7 +55,7 @@ const ForgetPassword = () => {
       console.log("Email for reset:", data.email);
       
       toast.success("OTP sent to your email.");
-      router.push("/verify-otp?flow=reset"); 
+      router.push(`/verify-otp?flow=reset&email=${encodeURIComponent(data.email)}`); 
     } catch (error) {
       console.error("Failed to send OTP:", error);
       toast.error("Something went wrong. Please try again.");
@@ -51,79 +64,86 @@ const ForgetPassword = () => {
     }
   };
 
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
   return (
-    <div className="relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-pink-50 py-10">
-      {/* Background Shape */}
-      <div className="absolute inset-0 w-full h-full z-0">
-        <Image
-          src="/icons/shape.png"
-          alt="Background Shape"
-          fill
-          className="object-cover"
-          priority
-        />
-      </div>
-
-      {/* Form Card */}
+    <div className="relative h-screen w-full flex flex-col lg:flex-row">
+      {/* Left - Form */}
       <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5 }}
-        className="z-10 w-full px-4 md:px-0 flex items-center justify-center"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.7 }}
+        className="flex-1 flex items-center justify-center p-6 sm:p-8 lg:p-12 bg-white lg:min-h-screen"
       >
-        <Card
-          className="w-full max-w-[550px] bg-white border border-[#DDDDDD] rounded-[24px] p-0"
-          style={{
-            boxShadow:
-              "0px 5px 11px 0px #0000000D, 0px 19px 19px 0px #0000000D, 0px 43px 26px 0px #0000000D, 0px 77px 31px 0px #00000003, 0px 120px 34px 0px #00000000",
-          }}
-        >
-          <CardContent className="p-8 md:p-[40px]">
-            <div className="flex flex-col items-center gap-6">
-              <h1 className="text-3xl md:text-4xl font-bold text-foreground text-center">
-                Forgot Password
-              </h1>
-
-              <form onSubmit={handleSubmit(onSubmit)} className="w-full flex flex-col gap-6">
-                {/* Email Field */}
-                <div className="space-y-3">
-                  <Label htmlFor="email" className="text-xl font-normal text-foreground">
-                    Email
-                  </Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="Enter your email..."
-                    className={`h-14 rounded-xl text-base ${
-                      errors.email ? "border-red-500 focus-visible:ring-red-500" : "text-foreground "
-                    }`}
-                    {...register("email")}
-                  />
-                  {errors.email && (
-                    <p className="text-sm text-red-500">{errors.email.message}</p>
-                  )}
-                </div>
-
-                {/* Submit Button */}
-                <Button
-                  type="submit"
-                  disabled={isLoading}
-                   className="w-full h-13 bg-primary hover:bg-primary/90 text-white text-lg font-bold rounded-xl shadow-none"
-                >
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                      Sending OTP...
-                    </>
-                  ) : (
-                    "Send OTP"
-                  )}
-                </Button>
-              </form>
+        <div className="w-full max-w-md lg:max-w-lg space-y-8">
+          {/* Logo + Title */}
+          <div className="text-center space-y-3">
+            <div className="flex justify-center mb-6 md:mb-8">
+              <Image
+                src="/icons/logo.svg"
+                alt="Xandra Logo"
+                width={140}
+                height={140}
+                className="w-28 sm:w-36 h-auto"
+                priority
+              />
             </div>
-          </CardContent>
-        </Card>
+            <h1 className="text-2xl sm:text-3xl font-semibold text-foreground">Reset password</h1>
+            <p className="text-base sm:text-lg text-secondary">
+              To reset password enter your email
+            </p>
+          </div>
+
+          {/* Form */}
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            <FloatingInput
+              label="Email"
+              type="email"
+              autoComplete="email"
+              error={errors.email?.message}
+              labelClassName="text-secondary"
+              className="h-14 rounded-full border-2 focus:border-primary focus:ring-0 px-6 text-base"
+              {...register("email")}
+              onChange={handleTrimChange("email")}
+            />
+
+            <Button
+              type="submit"
+              disabled={isLoading}
+              className="w-full h-14 bg-primary hover:bg-primary/90 text-white text-lg font-semibold rounded-full shadow-md transition-all duration-200"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-3 h-5 w-5 animate-spin" />
+                  Sending...
+                </>
+              ) : (
+                "Continue"
+              )}
+            </Button>
+
+            {/* Resend Link */}
+            <div className="text-center text-sm sm:text-base">
+              <span className="text-secondary">Didn&apos;t get the email? </span>
+              <button
+                type="button"
+                onClick={() => setCountdown(60)}
+                disabled={countdown > 0}
+                className="text-primary font-semibold hover:text-primary/80 hover:underline transition-colors disabled:opacity-70 disabled:no-underline"
+              >
+                {countdown > 0 ? `Resent in ${formatTime(countdown)}` : "Resend"}
+              </button>
+            </div>
+          </form>
+        </div>
       </motion.div>
+
+      {/* Right - Image (hidden on mobile) */}
+      <RightSideImage />
     </div>
   );
 };
