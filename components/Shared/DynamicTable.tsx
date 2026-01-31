@@ -304,7 +304,7 @@ export function DynamicTable<T extends Record<string, any>>({
                   <th
                     key={column.key}
                     className={cn(
-                      "py-4 px-6 font-semibold text-sm",
+                      "p-5 font-semibold text-sm",
                       column.align === "center" && "text-center",
                       column.align === "right" && "text-right",
                       !column.align && "text-left",

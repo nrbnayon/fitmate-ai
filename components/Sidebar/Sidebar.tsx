@@ -18,6 +18,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import type { IconSvgElement } from "@hugeicons/react";
 import {
   DashboardSquare02Icon,
+  PackageAddIcon,
   Settings01Icon,
   UserMultiple03Icon,
 } from "@hugeicons/core-free-icons";
@@ -77,6 +78,12 @@ export default function DashboardWrapper({ children }: DashboardWrapperProps) {
         label: "User Management",
         href: "/user-management",
         icon: UserMultiple03Icon,
+        roles: ["admin"],
+      },
+      {
+        label: "Products",
+        href: "/products",
+        icon: PackageAddIcon,
         roles: ["admin"],
       },
       {
