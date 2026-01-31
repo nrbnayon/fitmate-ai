@@ -1,5 +1,11 @@
-// data/usersData.ts
-import { User } from "@/types/users";
+import { User, Order } from "@/types/users";
+
+const mockOrders: Order[] = [
+  { id: "1", productName: "Match Fever Lipstick", variant: "Peachy Blush", image: "/images/product.png" },
+  { id: "2", productName: "Match Fever Lipstick", variant: "Peachy Blush", image: "/images/product.png" },
+  { id: "3", productName: "Match Fever Lipstick", variant: "Peachy Blush", image: "/images/product.png" },
+  { id: "4", productName: "Match Fever Lipstick", variant: "Peachy Blush", image: "/images/product.png" },
+];
 
 export const usersData: User[] = [
     {
@@ -11,6 +17,11 @@ export const usersData: User[] = [
     location: "New York, USA",
     date: "2024-01-15",
     image: "/images/avatar.png",
+    phone: "+123 456 7890",
+    totalSpending: 0,
+    totalOrders: 0,
+    activeOrders: [],
+    previousOrders: [],
   },
   {
     id: "2",
@@ -24,12 +35,19 @@ export const usersData: User[] = [
     videos: 112,
     sales: 456,
     commission: 426.5,
+    phone: "+123 415 4612",
+    totalEarnings: 2420,
+    totalOrders: 316,
+    totalReviews: 420,
+    withdraws: 3160,
+    activeOrders: mockOrders,
+    previousOrders: mockOrders,
   },
   {
     id: "3",
     name: "Phoenix Baker",
     email: "phoenix@untitledui.com",
-    role: "creator", // Based on "Top Creators" table
+    role: "creator",
     status: "Inactive",
     location: "775 Rolling Green Rd.",
     date: "26-1-2024",
@@ -37,6 +55,13 @@ export const usersData: User[] = [
     videos: 112,
     sales: 456,
     commission: 426.5,
+    phone: "+123 415 4612",
+    totalEarnings: 1200,
+    totalOrders: 150,
+    totalReviews: 80,
+    withdraws: 1000,
+    activeOrders: mockOrders,
+    previousOrders: mockOrders,
   },
   {
     id: "4",
@@ -50,12 +75,19 @@ export const usersData: User[] = [
     videos: 112,
     sales: 456,
     commission: 428.5,
+    phone: "+123 415 4612",
+    totalEarnings: 3400,
+    totalOrders: 400,
+    totalReviews: 500,
+    withdraws: 3000,
+    activeOrders: mockOrders,
+    previousOrders: mockOrders,
   },
   {
     id: "5",
     name: "Drew Cano",
     email: "drew@untitledui.com",
-    role: "creator", // User Management image shows "User" badge, but let's mix it up
+    role: "creator",
     status: "Inactive",
     location: "775 Rolling Green Rd.",
     date: "26-1-2024",
@@ -63,6 +95,13 @@ export const usersData: User[] = [
     videos: 112,
     sales: 456,
     commission: 426.5,
+    phone: "+123 415 4612",
+    totalEarnings: 2100,
+    totalOrders: 200,
+    totalReviews: 300,
+    withdraws: 2000,
+    activeOrders: mockOrders,
+    previousOrders: mockOrders,
   },
   {
     id: "6",
@@ -73,6 +112,11 @@ export const usersData: User[] = [
     location: "775 Rolling Green Rd.",
     date: "26-1-2024",
     image: "/images/user.webp",
+    phone: "+123 555 0100",
+    totalSpending: 2420,
+    totalOrders: 316,
+    activeOrders: mockOrders,
+    previousOrders: mockOrders,
   },
   {
     id: "7",
@@ -83,6 +127,11 @@ export const usersData: User[] = [
     location: "775 Rolling Green Rd.",
     date: "26-1-2024",
     image: "/images/user.webp",
+    phone: "+123 555 0101",
+    totalSpending: 1200,
+    totalOrders: 150,
+    activeOrders: mockOrders,
+    previousOrders: mockOrders,
   },
   {
     id: "8",
@@ -93,6 +142,11 @@ export const usersData: User[] = [
     location: "775 Rolling Green Rd.",
     date: "26-1-2024",
     image: "/images/user.webp",
+    phone: "+123 555 0102",
+    totalSpending: 800,
+    totalOrders: 90,
+    activeOrders: mockOrders,
+    previousOrders: mockOrders,
   },
   {
     id: "9",
@@ -103,6 +157,11 @@ export const usersData: User[] = [
     location: "775 Rolling Green Rd.",
     date: "26-1-2024",
     image: "/images/user.webp",
+    phone: "+123 555 0103",
+    totalSpending: 4500,
+    totalOrders: 500,
+    activeOrders: mockOrders,
+    previousOrders: mockOrders,
   },
   {
     id: "10",
@@ -113,6 +172,11 @@ export const usersData: User[] = [
     location: "775 Rolling Green Rd.",
     date: "26-1-2024",
     image: "/images/user.webp",
+    phone: "+123 555 0104",
+    totalSpending: 320,
+    totalOrders: 40,
+    activeOrders: mockOrders,
+    previousOrders: mockOrders,
   },
   {
     id: "11",
@@ -123,6 +187,11 @@ export const usersData: User[] = [
     location: "775 Rolling Green Rd.",
     date: "26-1-2024",
     image: "/images/user.webp",
+    phone: "+123 555 0105",
+    totalSpending: 670,
+    totalOrders: 85,
+    activeOrders: mockOrders,
+    previousOrders: mockOrders,
   },
   {
     id: "12",
@@ -133,6 +202,11 @@ export const usersData: User[] = [
     location: "775 Rolling Green Rd.",
     date: "26-1-2024",
     image: "/images/user.webp",
+    phone: "+123 555 0106",
+    totalSpending: 1540,
+    totalOrders: 190,
+    activeOrders: mockOrders,
+    previousOrders: mockOrders,
   },
   {
     id: "13",
@@ -143,6 +217,10 @@ export const usersData: User[] = [
     location: "London, UK",
     date: "27-1-2024",
     image: "/images/user.webp",
+    phone: "+123 555 0107",
+    totalSpending: 2100,
+    totalOrders: 250,
+    activeOrders: mockOrders,
+    previousOrders: mockOrders,
   }
-  
 ];

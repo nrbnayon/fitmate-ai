@@ -246,7 +246,7 @@ export function DynamicTable<T extends Record<string, any>>({
   const visibleColumns = config.columns.filter((col) => !col.hidden);
 
   return (
-    <div className={cn("bg-white rounded-3xl shadow-[6px_6px_54px_0px_#0000000D] w-full", className)}>
+    <div className={cn("bg-white rounded-3xl shadow-[0px_1px_2px_0px_#0A0D120F,0px_1px_3px_0px_#0A0D121A] w-full", className)}>
       {/* Header */}
       {(title || filter?.enabled) && (
         <div className="p-6 border-b border-border">
