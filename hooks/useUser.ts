@@ -15,6 +15,7 @@ export interface UserInfo {
   name: string | null;
   role: string | null;
   email: string | null;
+  image: string | null;
   accessToken: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
@@ -62,11 +63,12 @@ export function useUser() {
         // SIMULATE API CALL: Find user details from dummy data
         const foundUser = usersData.find((u) => u.email === email);
         const userName = foundUser ? foundUser.name : "User"; // Default if not found
+        const userImage = foundUser ? foundUser.image : undefined;
 
         // Dispatch to Redux to sync state
         dispatch(
           setCredentials({
-            user: { name: userName, email, role },
+            user: { name: userName, email, role, image: userImage },
             token: accessToken,
           }),
         );
@@ -104,6 +106,7 @@ export function useUser() {
     name: redUser?.name || null,
     role: redUser?.role || null,
     email: redUser?.email || null,
+    image: redUser?.image || null,
     // We don't necessarily store the token string in the public `user` object in Redux if we want to be minimal,
     // but authSlice has it.
     accessToken: useAppSelector((state) => state.auth.token),

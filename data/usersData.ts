@@ -10,6 +10,7 @@ export const usersData: User[] = [
     status: "Active",
     location: "New York, USA",
     date: "2024-01-15",
+    image: "/images/avatar.png",
   },
   {
     id: "2",
