@@ -75,7 +75,7 @@ export default function DashboardWrapper({ children }: DashboardWrapperProps) {
       },
       {
         label: "User Management",
-        href: "/dashboard/user-management",
+        href: "/user-management",
         icon: UserMultiple03Icon,
         roles: ["admin"],
       },

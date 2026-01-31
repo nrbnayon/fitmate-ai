@@ -10,6 +10,7 @@ import {
   TableAction,
   SortConfig,
   ConfirmationConfig,
+  TableColumn,
 } from "@/types/table.types";
 import { ArrowUpDown, ArrowUp, ArrowDown, Loader2 } from "lucide-react";
 
@@ -28,7 +29,6 @@ export function DynamicTable<T extends Record<string, any>>({
   onRowClick,
   striped = false,
   hoverable = true,
-  bordered = false,
   stickyHeader = false,
 }: DynamicTableProps<T>) {
   // State management
@@ -249,10 +249,10 @@ export function DynamicTable<T extends Record<string, any>>({
     <div className={cn("bg-white rounded-3xl shadow-[6px_6px_54px_0px_#0000000D] w-full", className)}>
       {/* Header */}
       {(title || filter?.enabled) && (
-        <div className="p-6 border-b border-gray-100">
+        <div className="p-6 border-b border-border">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             {title && (
-              <h2 className="text-xl font-bold text-gray-900">{title}</h2>
+              <h2 className="text-xl font-bold text-foreground">{title}</h2>
             )}
             {filter?.enabled && (
               <input
@@ -271,16 +271,15 @@ export function DynamicTable<T extends Record<string, any>>({
       )}
 
       {/* Table */}
-      <div className="overflow-x-auto p-4">
+      <div className="overflow-x-auto pb-4">
         <div className={stickyHeader ? "max-h-[600px] overflow-y-auto" : ""}>
           <table className="w-full min-w-[800px]">
             <thead
               className={cn(
-                stickyHeader && "sticky top-0 z-10 bg-white",
-                headerClassName
+                stickyHeader && "sticky top-0 z-10"
               )}
             >
-              <tr className="bg-[#F1F4F9]">
+              <tr className={cn("bg-primary", headerClassName)}>
                 {/* Selection Column */}
                 {/* {selection?.enabled && selection.mode === "multiple" && (
                   <th className="py-4 px-6 rounded-l-xl">
@@ -305,16 +304,16 @@ export function DynamicTable<T extends Record<string, any>>({
                   <th
                     key={column.key}
                     className={cn(
-                      "py-4 px-6 text-gray-500 font-semibold text-sm",
+                      "py-4 px-6 font-semibold text-sm",
                       column.align === "center" && "text-center",
                       column.align === "right" && "text-right",
                       !column.align && "text-left",
                       index === 0 &&
                         !selection?.enabled &&
-                        "rounded-l-xl",
+                        "",
                       index === visibleColumns.length - 1 &&
                         !config.showActions &&
-                        "rounded-r-xl",
+                        "",
                       column.className
                     )}
                     style={{ width: column.width }}
@@ -332,7 +331,7 @@ export function DynamicTable<T extends Record<string, any>>({
                     >
                       {column.header}
                       {column.sortable && (
-                        <span className="text-gray-400">
+                        <span className="text-white">
                           {sortConfig?.key === column.key ? (
                             sortConfig.direction === "asc" ? (
                               <ArrowUp className="w-4 h-4" />
@@ -352,7 +351,7 @@ export function DynamicTable<T extends Record<string, any>>({
                 {config.showActions && config.actions && (
                   <th
                     className={cn(
-                      "py-4 px-6 rounded-r-xl text-gray-500 font-semibold text-sm",
+                      "py-4 px-6 font-semibold text-sm",
                       config.actionsAlign === "center" && "text-center",
                       config.actionsAlign === "right" && "text-right",
                       !config.actionsAlign && "text-center"
@@ -387,7 +386,7 @@ export function DynamicTable<T extends Record<string, any>>({
                       (selection?.enabled ? 1 : 0) +
                       (config.showActions ? 1 : 0)
                     }
-                    className="py-12 text-center text-gray-500"
+                    className="py-12 text-center text-white"
                   >
                     {emptyMessage}
                   </td>
@@ -437,7 +436,7 @@ export function DynamicTable<T extends Record<string, any>>({
                         <td
                           key={column.key}
                           className={cn(
-                            "py-4 px-6 text-gray-900",
+                            "py-4 px-6",
                             column.align === "center" && "text-center",
                             column.align === "right" && "text-right",
                             column.className
@@ -483,7 +482,7 @@ export function DynamicTable<T extends Record<string, any>>({
                                     action.variant === "primary" &&
                                       "hover:bg-blue-50 text-blue-600",
                                     !action.variant &&
-                                      "hover:bg-gray-100 text-gray-600"
+                                      "hover:bg-gray-100 text-secondary"
                                   )}
                                   title={action.tooltip}
                                   aria-label={action.label}
@@ -527,7 +526,11 @@ export function DynamicTable<T extends Record<string, any>>({
         }
         onConfirm={confirmationModal.onConfirm}
         isLoading={isActionLoading}
-        {...confirmationModal.config}
+        title={confirmationModal.config.title || "Confirm Action"}
+        message={confirmationModal.config.description || "Are you sure?"}
+        isDestructive={confirmationModal.config.type === "delete" || confirmationModal.config.type === "warning"}
+        confirmText={confirmationModal.config.confirmText}
+        cancelText={confirmationModal.config.cancelText}
       />
     </div>
   );

@@ -75,13 +75,13 @@ export function TablePagination({
       )}
     >
       <div className="flex items-center gap-4">
-        <div className="text-sm text-gray-600">
+        <div className="text-sm text-secondary">
           Showing {startItem} to {endItem} of {totalItems} entries
         </div>
         
         {showPageSize && onPageSizeChange && (
           <div className="flex items-center gap-2">
-            <label htmlFor="pageSize" className="text-sm text-gray-600">
+            <label htmlFor="pageSize" className="text-sm text-secondary">
               Show:
             </label>
             <select
@@ -107,7 +107,7 @@ export function TablePagination({
           onClick={() => onPageChange(currentPage - 1)}
           aria-label="Previous page"
         >
-          <ChevronLeft className="w-4 h-4 text-gray-600" />
+          <ChevronLeft className="w-4 h-4 text-secondary" />
         </button>
 
         {getPageNumbers().map((page, index) => {
@@ -146,7 +146,7 @@ export function TablePagination({
           onClick={() => onPageChange(currentPage + 1)}
           aria-label="Next page"
         >
-          <ChevronRight className="w-4 h-4 text-gray-600" />
+          <ChevronRight className="w-4 h-4 text-secondary" />
         </button>
       </div>
     </div>
