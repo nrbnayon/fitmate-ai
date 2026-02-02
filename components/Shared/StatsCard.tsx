@@ -40,8 +40,12 @@ export function StatsCard({
         <div className="text-3xl font-bold text-foreground">{value}</div>
         {subtitle && (
           <div className="flex items-center gap-1 text-xs">
-            <TrendingUp className="w-3 h-3 text-primary" />
-            <span className="text-primary font-medium">{percentage}%</span>
+            {percentage && (
+              <>
+                <TrendingUp className="w-3 h-3 text-primary" />
+                <span className="text-primary font-medium">{percentage}%</span>
+              </>
+            )}
             <span className="text-secondary">{subtitleText}</span>
           </div>
         )}

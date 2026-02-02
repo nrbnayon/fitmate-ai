@@ -1,0 +1,68 @@
+import { CommissionTracking } from "@/types/commissionTracking";
+
+export const commissionTrackingData: CommissionTracking[] = [
+  {
+    id: "1",
+    creator: "Mike Chen",
+    date: "Jan 6, 2025",
+    totalSales: "$2847",
+    commission: "$426.50",
+    status: "paid",
+  },
+  {
+    id: "2",
+    creator: "Kate Morrison",
+    date: "Jan 6, 2025",
+    totalSales: "$2847",
+    commission: "$426.50",
+    status: "pending",
+  },
+  {
+    id: "3",
+    creator: "Kate Morrison",
+    date: "Jan 6, 2025",
+    totalSales: "$2847",
+    commission: "$426.50",
+    status: "paid",
+  },
+  {
+    id: "4",
+    creator: "Kate Morrison",
+    date: "Jan 6, 2025",
+    totalSales: "$2847",
+    commission: "$426.50",
+    status: "paid",
+  },
+  {
+    id: "5",
+    creator: "Kate Morrison",
+    date: "Jan 6, 2025",
+    totalSales: "$2847",
+    commission: "$426.50",
+    status: "pending",
+  },
+  {
+    id: "6",
+    creator: "Kate Morrison",
+    date: "Jan 6, 2025",
+    totalSales: "$2847",
+    commission: "$426.50",
+    status: "paid",
+  },
+  {
+    id: "7",
+    creator: "Kate Morrison",
+    date: "Jan 6, 2025",
+    totalSales: "$2847",
+    commission: "$426.50",
+    status: "paid",
+  },
+  {
+    id: "8",
+    creator: "Kate Morrison",
+    date: "Jan 6, 2025",
+    totalSales: "$2847",
+    commission: "$426.50",
+    status: "pending",
+  },
+];

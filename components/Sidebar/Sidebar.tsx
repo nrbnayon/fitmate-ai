@@ -15,11 +15,14 @@ import {
   ChevronUp,
   Bell,
   CreditCard,
+  ScrollText,
+  ShieldCheck,
 } from "lucide-react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import type { IconSvgElement } from "@hugeicons/react";
 import {
   DashboardSquare02Icon,
+  Dollar01Icon,
   PackageAddIcon,
   Settings01Icon,
   UserMultiple03Icon,
@@ -92,6 +95,24 @@ export default function DashboardWrapper({ children }: DashboardWrapperProps) {
         label: "Payment History",
         href: "/payment-history",
         icon: <CreditCard />,
+        roles: ["admin"],
+      },
+      {
+        label: "Order Management",
+        href: "/order-management",
+        icon: <ScrollText />, 
+        roles: ["admin"],
+      },
+      {
+        label: "Commission Tracking",
+        href: "/commission-tracking",
+        icon: Dollar01Icon, 
+        roles: ["admin"],
+      },
+      {
+        label: "Privacy & policy",
+        href: "/privacy-policy",
+        icon: <ShieldCheck />, 
         roles: ["admin"],
       },
       {
