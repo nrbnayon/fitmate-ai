@@ -15,19 +15,19 @@ export default function DashboardHeader({
   const { name, role, image } = useUser();
 
   return (
-    <div className="bg-white flex flex-col md:flex-row justify-between items-center py-4 px-4 md:px-8 border-b border-border gap-4">
+    <div className="bg-white flex flex-row justify-between items-center py-2 px-4 md:px-8 border-b border-border gap-4">
       <div className="flex flex-col items-start justify-center">
-        <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-foreground">
+        <h1 className="text-base md:text-2xl lg:text-3xl font-bold text-foreground">
           {title}
         </h1>
         {description && (
-          <p className="text-secondary mt-1">
+          <p className="text-xs md:text-base text-secondary mt-1">
             {description}
           </p>
         )}
       </div>
 
-      <div className="flex items-center gap-6">
+      <div className="hidden md:flex items-center gap-6">
         {/* Notification Icon */}
         <Link 
           href="/notifications"

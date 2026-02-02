@@ -12,7 +12,8 @@ import {
   ConfirmationConfig,
   TableColumn,
 } from "@/types/table.types";
-import { ArrowUpDown, ArrowUp, ArrowDown, Loader2 } from "lucide-react";
+import { ArrowUpDown, ArrowUp, ArrowDown, PackageOpen } from "lucide-react";
+import { TableSkeleton } from "@/components/Skeleton/TableSkeleton";
 
 export function DynamicTable<T extends Record<string, any>>({
   data,
@@ -373,9 +374,9 @@ export function DynamicTable<T extends Record<string, any>>({
                       (selection?.enabled ? 1 : 0) +
                       (config.showActions ? 1 : 0)
                     }
-                    className="py-12 text-center"
+                    className="p-0 border-none"
                   >
-                    <Loader2 className="w-8 h-8 animate-spin mx-auto text-blue-600" />
+                    <TableSkeleton rowCount={5} />
                   </td>
                 </tr>
               ) : paginatedData.length === 0 ? (
@@ -386,9 +387,17 @@ export function DynamicTable<T extends Record<string, any>>({
                       (selection?.enabled ? 1 : 0) +
                       (config.showActions ? 1 : 0)
                     }
-                    className="py-12 text-center text-white"
+                    className="py-16 text-center text-gray-500"
                   >
-                    {emptyMessage}
+                    <div className="flex flex-col items-center justify-center gap-3">
+                        <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center">
+                            <PackageOpen className="w-8 h-8 text-gray-400" />
+                        </div>
+                        <div className="space-y-1">
+                            <p className="font-semibold text-lg text-foreground">No data found</p>
+                            <p className="text-sm text-foreground/80">{emptyMessage}</p>
+                        </div>
+                    </div>
                   </td>
                 </tr>
               ) : (

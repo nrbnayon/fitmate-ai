@@ -13,6 +13,7 @@ import {
   PanelRightOpen,
   ChevronDown,
   ChevronUp,
+  Bell,
 } from "lucide-react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import type { IconSvgElement } from "@hugeicons/react";
@@ -35,7 +36,7 @@ interface SubLink {
 interface LinkType {
   label: string;
   href: string;
-  icon: IconSvgElement;
+  icon: any; // React.ElementType | React.ReactNode | IconSvgElement
   subLinks?: SubLink[];
   roles?: string[];
 }
@@ -84,6 +85,12 @@ export default function DashboardWrapper({ children }: DashboardWrapperProps) {
         label: "Products",
         href: "/products",
         icon: PackageAddIcon,
+        roles: ["admin"],
+      },
+      {
+        label: "Notifications",
+        href: "/notifications",
+        icon: <Bell className="w-5 h-5" />,
         roles: ["admin"],
       },
       {
@@ -237,19 +244,39 @@ export default function DashboardWrapper({ children }: DashboardWrapperProps) {
     setShowLogoutModal(false);
   };
 
-  const renderIcon = useCallback((icon: IconSvgElement, isActive: boolean) => {
-    return (
-      <HugeiconsIcon
-        icon={icon}
-        strokeWidth={2}
-        className={cn(
-          "h-6 w-6 shrink-0 transition-colors duration-200",
-          isActive
-            ? "text-white font-bold"
-            : "text-foreground group-hover:text-foreground font-bold"
-        )}
-      />
+  const renderIcon = useCallback((Icon: any, isActive: boolean) => {
+    const iconClasses = cn(
+        "h-6 w-6 shrink-0 transition-colors duration-200",
+        isActive
+          ? "text-white font-bold"
+          : "text-foreground group-hover:text-foreground font-bold"
     );
+
+    // 1. If it's a valid React Element (pre-rendered JSX like <Bell />), clone it to inject classes if needed or just return
+    if (React.isValidElement(Icon)) {
+        return React.cloneElement(Icon as React.ReactElement<any>, {
+            className: cn((Icon.props as any).className, iconClasses)
+        });
+    }
+
+    // 2. If it's a Hugeicon object (legacy check from @hugeicons/core-free-icons)
+    // We assume if it's an object with specific shape it might be Hugeicon data, but generally components are functions.
+    // However, the original code used HugeiconsIcon component which specifically takes `icon={icon}` data.
+    // Let's heuristics: if passed icon is likely not a component (function) but an object, try HugeiconsIcon.
+    // DashboardSquare02Icon is an object usually.
+    if (typeof Icon === 'object' && !React.isValidElement(Icon)) {
+         return (
+          <HugeiconsIcon
+            icon={Icon}
+            strokeWidth={2}
+            className={iconClasses}
+          />
+        );
+    }
+
+    // 3. Assume it's a Component (Lucide, React-Icon, or FontAwesome component)
+    const IconComponent = Icon as React.ElementType;
+    return <IconComponent className={iconClasses} />;
   }, []);
 
   const getRoleBadgeColor = (role: string) => {
