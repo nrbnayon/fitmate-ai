@@ -1,0 +1,68 @@
+import { PaymentHistory } from "@/types/paymentHistory";
+
+export const paymentHistoryData: PaymentHistory[] = [
+  {
+    id: "1",
+    paymentId: "Pay-12-abc",
+    customer: "Kate Morrison",
+    date: "Jan 6, 2025",
+    amount: "$45.50",
+    transaction: "Apple pay",
+  },
+  {
+    id: "2",
+    paymentId: "Pay-12-abc",
+    customer: "Kate Morrison",
+    date: "Jan 6, 2025",
+    amount: "$45.50",
+    transaction: "Google pay",
+  },
+  {
+    id: "3",
+    paymentId: "Pay-12-abc",
+    customer: "Kate Morrison",
+    date: "Jan 6, 2025",
+    amount: "$45.50",
+    transaction: "Stripe",
+  },
+  {
+    id: "4",
+    paymentId: "Pay-12-abc",
+    customer: "Kate Morrison",
+    date: "Jan 6, 2025",
+    amount: "$45.50",
+    transaction: "Apple pay",
+  },
+  {
+    id: "5",
+    paymentId: "Pay-12-abc",
+    customer: "Kate Morrison",
+    date: "Jan 6, 2025",
+    amount: "$45.50",
+    transaction: "Google pay",
+  },
+  {
+    id: "6",
+    paymentId: "Pay-12-abc",
+    customer: "Kate Morrison",
+    date: "Jan 6, 2025",
+    amount: "$45.50",
+    transaction: "Stripe",
+  },
+  {
+    id: "7",
+    paymentId: "Pay-12-abc",
+    customer: "Kate Morrison",
+    date: "Jan 6, 2025",
+    amount: "$45.50",
+    transaction: "Apple pay",
+  },
+  {
+    id: "8",
+    paymentId: "Pay-12-abc",
+    customer: "Kate Morrison",
+    date: "Jan 6, 2025",
+    amount: "$45.50",
+    transaction: "Google pay",
+  },
+];

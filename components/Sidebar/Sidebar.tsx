@@ -14,6 +14,7 @@ import {
   ChevronDown,
   ChevronUp,
   Bell,
+  CreditCard,
 } from "lucide-react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import type { IconSvgElement } from "@hugeicons/react";
@@ -85,6 +86,12 @@ export default function DashboardWrapper({ children }: DashboardWrapperProps) {
         label: "Products",
         href: "/products",
         icon: PackageAddIcon,
+        roles: ["admin"],
+      },
+      {
+        label: "Payment History",
+        href: "/payment-history",
+        icon: <CreditCard />,
         roles: ["admin"],
       },
       {
