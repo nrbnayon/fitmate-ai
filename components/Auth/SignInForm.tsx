@@ -16,7 +16,8 @@ import { FloatingInput } from "@/components/ui/floating-input";
 import { Label } from "@/components/ui/label";
 
 import { useAppDispatch } from "@/redux/hooks";
-import { setCredentials } from "@/redux/features/authSlice";
+import { loginSuccess } from "@/redux/features/authSlice";
+import { useLoginMutation } from "@/redux/services/authApi";
 import { toast } from "sonner";
 import { loginValidationSchema } from "@/lib/formDataValidation";
 import { RightSideImage } from "./RightSideImage";
@@ -25,15 +26,14 @@ type FormValues = z.infer<typeof loginValidationSchema>;
 
 export const SignInForm = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const dispatch = useAppDispatch();
+  const [login, { isLoading }] = useLoginMutation();
 
   const {
     register,
     handleSubmit,
     control,
-    watch,
     setValue,
     formState: { errors },
   } = useForm<FormValues>({
@@ -52,52 +52,23 @@ export const SignInForm = () => {
   };
 
   const onSubmit = async (data: FormValues) => {
-    // Final trim just in case (though already trimmed)
-    const cleanData = {
-      ...data,
-      email: data.email.trim(),
-      password: data.password.trim(),
-    };
-
-    setIsLoading(true);
     try {
-      // Replace with real API call
-      // const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
-      //   method: "POST",
-      //   headers: { "Content-Type": "application/json" },
-      //   body: JSON.stringify(cleanData),
-      // });
+      const response = await login({
+        email: data.email.trim(),
+        password: data.password.trim(),
+      }).unwrap();
 
-      await new Promise((resolve) => setTimeout(resolve, 1500)); // simulate delay
-
-      const mockUser = {
-        name: "Nayon", // or from real response
-        email: cleanData.email,
-        role: "admin",
-        image: "/images/avatar.png",
-      };
-      const mockToken = `mock_access_token_${Date.now()}`;
-
-      dispatch(
-        setCredentials({
-          user: mockUser,
-          token: mockToken,
-        })
-      );
-
-      // Cookies - httpOnly would be better in real app (use server action / API route)
-      const maxAge = cleanData.rememberMe ? 86400 : undefined; // 1 day or session
-      document.cookie = `accessToken=${mockToken}; path=/; ${maxAge ? `max-age=${maxAge};` : ""} samesite=lax`;
-      document.cookie = `userRole=${mockUser.role}; path=/; ${maxAge ? `max-age=${maxAge};` : ""} samesite=lax`;
-      document.cookie = `userEmail=${encodeURIComponent(mockUser.email)}; path=/; ${maxAge ? `max-age=${maxAge};` : ""} samesite=lax`;
-
-      toast.success("Logged in successfully!");
-      router.push("/");
-    } catch (error) {
+      if (response.success && response.data) {
+        dispatch(loginSuccess(response.data));
+        toast.success(response.message || "Logged in successfully!");
+        router.push("/");
+      } else {
+        toast.error(response.message || "Login failed.");
+      }
+    } catch (error: unknown) {
       console.error("Login error:", error);
-      toast.error("Login failed. Please try again.");
-    } finally {
-      setIsLoading(false);
+      const errorMessage = (error as any)?.data?.message || "Login failed. Please check your credentials.";
+      toast.error(errorMessage);
     }
   };
 

@@ -6,12 +6,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 
 import { Button } from "@/components/ui/button";
 import { FloatingInput } from "@/components/ui/floating-input";
 import { toast } from "sonner";
+import { useResetPasswordMutation } from "@/redux/services/authApi";
 import { RightSideImage } from "./RightSideImage";
 
 const resetPasswordSchema = z
@@ -32,8 +33,11 @@ type FormValues = z.infer<typeof resetPasswordSchema>;
 const ResetPassword = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [resetPassword, { isLoading }] = useResetPasswordMutation();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const user_id = searchParams.get("user_id") || "";
+  const secret_key = searchParams.get("secret_key") || "";
 
   const {
     register,
@@ -49,13 +53,11 @@ const ResetPassword = () => {
   });
 
   useEffect(() => {
-    // Check if user came from verified OTP (optional security, can be disabled for testing)
-    const isVerified = document.cookie.split("; ").find(row => row.startsWith("reset_verified="));
-    if (!isVerified && process.env.NODE_ENV === "production") {
-      toast.error("Unauthorized access. Please verify OTP first.");
+    if (!user_id || !secret_key) {
+      toast.error("Invalid reset link. Please start over.");
       router.push("/forgot-password");
     }
-  }, [router]);
+  }, [user_id, secret_key, router]);
 
   const handleTrimChange = (field: keyof FormValues) => (e: React.ChangeEvent<HTMLInputElement>) => {
     const trimmed = e.target.value.trim();
@@ -63,23 +65,24 @@ const ResetPassword = () => {
   };
 
   const onSubmit = async (data: FormValues) => {
-    setIsLoading(true);
     try {
-      // Simulation
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      console.log("Password Reset Data:", data);
-      
-      toast.success("Password reset successfully! Please login.");
-      
-      // Clear the verification cookie
-      document.cookie = "reset_verified=; path=/; max-age=0; SameSite=Strict";
-      
-      router.push("/signin"); 
-    } catch (error) {
+      const response = await resetPassword({
+        user_id,
+        secret_key,
+        new_password: data.newPassword,
+        confirm_password: data.confirmPassword,
+      }).unwrap();
+
+      if (response.success) {
+        toast.success(response.message || "Password reset successfully! Please login.");
+        router.push("/signin");
+      } else {
+        toast.error(response.message || "Reset failed.");
+      }
+    } catch (error: unknown) {
       console.error("Reset failed:", error);
-      toast.error("Something went wrong. Please try again.");
-    } finally {
-      setIsLoading(false);
+      const errorMessage = (error as any)?.data?.message || "Something went wrong. Please try again.";
+      toast.error(errorMessage);
     }
   };
 

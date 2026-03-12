@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/input-otp";
 
 import { toast } from "sonner";
+import { useVerifyResetCodeMutation, useResendVerificationCodeMutation } from "@/redux/services/authApi";
 import { RightSideImage } from "./RightSideImage";
 
 const otpSchema = z.object({
@@ -28,12 +29,14 @@ const otpSchema = z.object({
 type FormValues = z.infer<typeof otpSchema>;
 
 const VerifyOtp = () => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [countdown, setCountdown] = useState(41);
+  const [verifyResetCode, { isLoading: isVerifying }] = useVerifyResetCodeMutation();
+  const [resendCode, { isLoading: isResending }] = useResendVerificationCodeMutation();
+  const [countdown, setCountdown] = useState(0);
   const router = useRouter();
   const searchParams = useSearchParams();
   const flow = searchParams.get("flow") || "signup";
   const email = searchParams.get("email") || "";
+  const user_id = searchParams.get("user_id") || "";
 
   const {
     control,
@@ -60,44 +63,55 @@ const VerifyOtp = () => {
       return;
     }
 
-    setIsLoading(true);
     try {
-      // Simulation of sending OTP
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      console.log("Resending OTP to:", email);
-      
-      toast.success(`A new code has been sent to ${email}`);
-      setCountdown(60); // Reset timer
-    } catch (error) {
+      const response = await resendCode({ email }).unwrap();
+      if (response.success) {
+        toast.success(response.message || `A new code has been sent to ${email}`);
+        setCountdown(60);
+      } else {
+        toast.error(response.message || "Failed to resend code.");
+      }
+    } catch (error: unknown) {
       console.error("Resend failed:", error);
-      toast.error("Failed to resend OTP. Please try again.");
-    } finally {
-      setIsLoading(false);
+      const errorMessage = (error as any)?.data?.message || "Failed to resend OTP. Please try again.";
+      toast.error(errorMessage);
     }
   };
 
   const onSubmit = async (data: FormValues) => {
-    setIsLoading(true);
-    try {
-      // Simulation
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      console.log("OTP:", data.otp);
-      
-      toast.success("Verification successful!");
-      
-      if (flow === "reset") {
-        document.cookie = "reset_verified=true; path=/; max-age=300; SameSite=Strict";
-        router.push("/reset-password");
-      } else {
-        router.push("/signin"); 
-      } 
-    } catch (error) {
-      console.error("Verification failed:", error);
-      toast.error("Invalid OTP. Please try again.");
-    } finally {
-      setIsLoading(false);
+    if (flow === "reset") {
+      if (!user_id) {
+        toast.error("User identification missing. Please start over.");
+        return;
+      }
+
+      try {
+        const response = await verifyResetCode({
+          user_id,
+          code: data.otp,
+        }).unwrap();
+
+        if (response.success && response.data) {
+          toast.success(response.message || "Verification successful!");
+          // Pass secret_key and user_id to reset-password page
+          router.push(
+            `/reset-password?user_id=${response.data.user_id}&secret_key=${response.data.secret_key}`
+          );
+        } else {
+          toast.error(response.message || "Invalid code.");
+        }
+      } catch (error: unknown) {
+        console.error("Verification failed:", error);
+        const errorMessage = (error as any)?.data?.message || "Invalid OTP. Please try again.";
+        toast.error(errorMessage);
+      }
+    } else {
+      // Handle other flows if any (e.g. signup)
+      toast.info("This flow is not yet implemented with real API.");
     }
   };
+
+  const isLoading = isVerifying || isResending;
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);

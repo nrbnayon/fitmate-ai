@@ -1,7 +1,7 @@
 // redux/store.ts
 import { configureStore } from '@reduxjs/toolkit';
 import { setupListeners } from '@reduxjs/toolkit/query';
-import { apiSlice } from './services/apiSlice';
+import { apiSlice } from './features/apiSlice';
 import authReducer from './features/authSlice';
 
 export const makeStore = () => {
