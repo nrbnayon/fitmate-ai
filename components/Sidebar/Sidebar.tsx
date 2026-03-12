@@ -39,7 +39,7 @@ interface SubLink {
 interface LinkType {
   label: string;
   href: string;
-  icon: any; // React.ElementType | React.ReactNode | IconSvgElement
+  icon: React.ElementType | React.ReactNode;
   subLinks?: SubLink[];
   roles?: string[];
 }
@@ -51,7 +51,7 @@ interface DashboardWrapperProps {
 export default function DashboardWrapper({ children }: DashboardWrapperProps) {
   const pathname = usePathname();
   // Use centralized user hook
-  const { name, role, isAuthenticated, logout } = useUser();
+  const { name, role, image, isAuthenticated, logout } = useUser();
 
   // State management
   const [open, setOpen] = useState(true);
@@ -272,36 +272,45 @@ export default function DashboardWrapper({ children }: DashboardWrapperProps) {
     setShowLogoutModal(false);
   };
 
-  const renderIcon = useCallback((Icon: any, isActive: boolean) => {
-    const iconClasses = cn(
-      "h-6 w-6 shrink-0 transition-colors duration-200",
-      isActive
-        ? "text-white font-bold"
-        : "text-foreground group-hover:text-foreground font-bold",
-    );
-
-    // 1. If it's a valid React Element (pre-rendered JSX like <Bell />), clone it to inject classes if needed or just return
-    if (React.isValidElement(Icon)) {
-      return React.cloneElement(Icon as React.ReactElement<any>, {
-        className: cn((Icon.props as any).className, iconClasses),
-      });
-    }
-
-    // 2. If it's a Hugeicon object (legacy check from @hugeicons/core-free-icons)
-    // We assume if it's an object with specific shape it might be Hugeicon data, but generally components are functions.
-    // However, the original code used HugeiconsIcon component which specifically takes `icon={icon}` data.
-    // Let's heuristics: if passed icon is likely not a component (function) but an object, try HugeiconsIcon.
-    // DashboardSquare02Icon is an object usually.
-    if (typeof Icon === "object" && !React.isValidElement(Icon)) {
-      return (
-        <HugeiconsIcon icon={Icon} strokeWidth={2} className={iconClasses} />
+  const renderIcon = useCallback(
+    (Icon: React.ElementType | React.ReactNode, isActive: boolean) => {
+      const iconClasses = cn(
+        "h-6 w-6 shrink-0 transition-colors duration-200",
+        isActive
+          ? "text-white font-bold"
+          : "text-foreground group-hover:text-foreground font-bold",
       );
-    }
 
-    // 3. Assume it's a Component (Lucide, React-Icon, or FontAwesome component)
-    const IconComponent = Icon as React.ElementType;
-    return <IconComponent className={iconClasses} />;
-  }, []);
+      // 1. If it's a valid React Element (pre-rendered JSX like <Bell />), clone it to inject classes if needed or just return
+      if (React.isValidElement(Icon)) {
+        return React.cloneElement(
+          Icon as React.ReactElement<{ className?: string }>,
+          {
+            className: cn(
+              (Icon.props as { className?: string }).className,
+              iconClasses,
+            ),
+          },
+        );
+      }
+
+      // 2. If it's a Hugeicon object (legacy check from @hugeicons/core-free-icons)
+      // We assume if it's an object with specific shape it might be Hugeicon data, but generally components are functions.
+      // However, the original code used HugeiconsIcon component which specifically takes `icon={icon}` data.
+      // Let's heuristics: if passed icon is likely not a component (function) but an object, try HugeiconsIcon.
+      // DashboardSquare02Icon is an object usually.
+      if (typeof Icon === "object" && !React.isValidElement(Icon)) {
+        return (
+          <HugeiconsIcon icon={Icon} strokeWidth={2} className={iconClasses} />
+        );
+      }
+
+      // 3. Assume it's a Component (Lucide, React-Icon, or FontAwesome component)
+      const IconComponent = Icon as React.ElementType;
+      return <IconComponent className={iconClasses} />;
+    },
+    [],
+  );
 
   const getRoleBadgeColor = (role: string) => {
     switch (role) {
@@ -520,12 +529,13 @@ export default function DashboardWrapper({ children }: DashboardWrapperProps) {
                     }}
                     className="flex items-center gap-3 flex-1 min-w-0 hover:opacity-80 transition-opacity"
                   >
-                    <div className="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center shrink-0">
+                    <div className="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center shrink-0 overflow-hidden">
                       <Image
-                        src="/images/avatar.png"
-                        alt="User"
+                        src={image || "/images/avatar.png"}
+                        alt={"Admin"}
                         width={40}
                         height={40}
+                        className="rounded-full object-cover"
                       />
                     </div>
                     <motion.div

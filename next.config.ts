@@ -136,6 +136,22 @@ const nextConfig: NextConfig = {
   // Add empty turbopack config to silence the warning
   turbopack: {},
   // Your other config options here
+  images: {
+    remotePatterns: [
+      {
+        protocol: "http",
+        hostname: "localhost",
+        port: "8000",
+        pathname: "/media/**",
+      },
+      {
+        protocol: "http",
+        hostname: "10.10.12.62",
+        port: "6005",
+        pathname: "/media/**",
+      },
+    ],
+  },
 };
 export default nextConfig;
 // export default withPWA(nextConfig);
