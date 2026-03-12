@@ -14,27 +14,38 @@ export interface ApiResponse<T = unknown> {
 export interface AuthTokens {
   access_token: string;
   refresh_token: string;
-  expires_in: number;
-  expires_at: number;
+  expires_in?: number;
+  expires_at?: number;
 }
 
 // ─── 1. Login / Sign-In ──────────────────────────────────────────────────────
 export interface LoginRequest {
-  email_address: string;
+  email: string;
   password: string;
 }
 
 export interface LoginUser {
   id: string;
-  email_address: string;
+  email: string;
   full_name: string;
   role: UserRole;
+}
+
+export interface LoginResponseData {
+  access_token: string;
+  access_token_valid_till: number;
+  refresh_token: string;
+  role: UserRole;
+  user_id: string;
 }
 
 export interface LoginResponse {
   user: LoginUser;
   tokens: AuthTokens;
 }
+
+// Alias for API response compatibility
+export type LoginApiResponse = LoginResponseData;
 
 // ─── 2. Forgot Password ───────────────────────────────────────────────────────
 export interface ForgotPasswordRequest {
