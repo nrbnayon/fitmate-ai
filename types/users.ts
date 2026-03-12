@@ -1,20 +1,23 @@
 // types/user.ts
-export interface User {  
-id: string;
+
+import { UserRole } from "./auth.types";
+
+export interface User {
+  id: string;
   name: string;
   email: string;
-  role: "admin" | "user" | "guest" | "creator";
+  role: UserRole;
   image?: string;
   status?: "Active" | "Inactive" | "Pending";
   location?: string;
   date?: string;
   phone?: string;
-  
+
   // Specific to Creators
   videos?: number;
   sales?: number;
   commission?: number;
-  
+
   // Modal Details
   totalEarnings?: number;
   totalOrders?: number;
