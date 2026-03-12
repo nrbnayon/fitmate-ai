@@ -7,8 +7,8 @@ import { DollarSign, Users, Eye, Activity } from "lucide-react";
 import { RevenueChart } from "@/components/Protected/Dashboard/RevenueChart";
 import { UserGrowthChart } from "@/components/Protected/Dashboard/UserGrowthChart";
 import { TopCreatorsTable } from "@/components/Protected/Dashboard/TopCreatorsTable";
-import { useGetDashboardDataQuery } from "@/redux/services/dashboardApi";
 import { DashboardSkeleton } from "@/components/Skeleton/DashboardSkeleton";
+import { useGetDashboardDataQuery } from "@/redux/services/dashboardApi";
 
 export default function DashboardPage() {
   const { data: dashboardData, isLoading, error } = useGetDashboardDataQuery();
