@@ -1,128 +1,132 @@
+// types/auth.types.ts (strictly typed against actual API responses updated)
+// ─── Strictly typed against actual API responses ──────────────────────────────
+
 export type UserRole = "admin" | "user" | "guest" | "creator";
 
-// ─── Generic API Response ────────────────────────────────────────────────────
+// ─── Generic API wrapper (all endpoints follow this shape) ───────────────────
 export interface ApiResponse<T = unknown> {
-  success?: boolean;
-  status?: number;
+  success: boolean;
+  status: number;
   message: string;
   data?: T;
   errors?: Record<string, unknown>;
   error_code?: string;
 }
 
-// ─── Auth Tokens ─────────────────────────────────────────────────────────────
-export interface AuthTokens {
-  access_token: string;
-  refresh_token: string;
-  expires_in?: number;
-  expires_at?: number;
-}
-
-// ─── 1. Login / Sign-In ──────────────────────────────────────────────────────
+// ─── 1. Login ─────────────────────────────────────────────────────────────────
+// POST /auth/login/
+// Body: { email, password }
 export interface LoginRequest {
   email: string;
   password: string;
 }
 
-export interface LoginUser {
-  id: string;
-  email: string;
-  full_name: string;
-  role: UserRole;
-}
-
 export interface LoginResponseData {
   access_token: string;
-  access_token_valid_till: number;
+  access_token_valid_till: number; // Unix ms timestamp
+  expires_at?: number;
   refresh_token: string;
   role: UserRole;
   user_id: string;
 }
 
-export interface LoginResponse {
-  user: LoginUser;
-  tokens: AuthTokens;
-}
-
-// Alias for API response compatibility
-export type LoginApiResponse = LoginResponseData;
+export type LoginApiResponse = ApiResponse<LoginResponseData>;
 
 // ─── 2. Forgot Password ───────────────────────────────────────────────────────
+// POST /auth/forgot-password/
+// Body: { email }
 export interface ForgotPasswordRequest {
-  email_address: string;
+  email: string;
 }
 
-export interface ForgotPasswordResponse {
-  message: string;
+export interface ForgotPasswordResponseData {
   user_id: string;
+  expires_at?: number; // Unix ms timestamp
 }
+
+export type ForgotPasswordApiResponse = ApiResponse<ForgotPasswordResponseData>;
 
 // ─── 3. Verify Reset Code ─────────────────────────────────────────────────────
+// POST /auth/verify-reset-code/
+// Body: { user_id, code }
 export interface VerifyResetCodeRequest {
   user_id: string;
-  verification_code: string;
+  code: string; // API uses "code" not "verification_code"
 }
 
-export interface VerifyResetCodeResponse {
-  message: string;
+export interface VerifyResetCodeResponseData {
   secret_key: string;
-}
-
-// ─── 4. Resend Verification Code ──────────────────────────────────────────────
-export interface ResendOtpRequest {
   user_id: string;
 }
 
-export interface ResendOtpResponse {
-  message: string;
-}
+export type VerifyResetCodeApiResponse =
+  ApiResponse<VerifyResetCodeResponseData>;
 
-// ─── 5. Reset Password ────────────────────────────────────────────────────────
+// ─── 4. Reset Password ────────────────────────────────────────────────────────
+// POST /auth/reset-password/
+// Body: { secret_key, user_id, new_password, confirm_password }
 export interface ResetPasswordRequest {
-  user_id: string;
   secret_key: string;
+  user_id: string;
   new_password: string;
   confirm_password: string;
 }
 
-export interface ResetPasswordResponse {
-  message: string;
+export type ResetPasswordApiResponse = ApiResponse<null>;
+
+// ─── 5. Resend Verification Code ──────────────────────────────────────────────
+// POST /auth/resend-verification/
+// Body: { email }  ← API uses "email"
+export interface ResendOtpRequest {
+  email: string;
 }
+
+export interface ResendOtpResponseData {
+  email: string;
+  expires_at?: number; // Unix ms timestamp
+}
+
+export type ResendOtpApiResponse = ApiResponse<ResendOtpResponseData>;
 
 // ─── 6. Refresh Token ─────────────────────────────────────────────────────────
+// GET /auth/refresh-token/  (Bearer Token in header)
+// Body: { refresh: string }
 export interface RefreshTokenRequest {
-  refresh_token: string;
+  refresh: string; // API uses "refresh" not "refresh_token"
 }
 
-export interface RefreshTokenResponse {
-  message: string;
+export interface RefreshTokenResponseData {
   access_token: string;
-  expires_in: number;
-  expires_at: number;
 }
 
-// ─── 7. Profile / Get Me ──────────────────────────────────────────────────────
-export interface ProfileResponse {
-  id: string;
+export type RefreshTokenApiResponse = ApiResponse<RefreshTokenResponseData>;
+
+// ─── 7. Get Profile / Me ──────────────────────────────────────────────────────
+// GET /auth/admin/profile/  (Bearer Token in header)
+export interface ProfileResponseData {
   full_name: string;
-  email_address: string;
-  phone_number?: string;
-  avatar?: string;
-  location?: string;
+  email: string;
+  profile_picture: string | null;
+  phone_number: string | null;
+  address: string | null;
+  created_at: string; // ISO date string
+}
+
+export type ProfileApiResponse = ApiResponse<ProfileResponseData>;
+
+// ─── Auth State (Redux slice shape) ──────────────────────────────────────────
+export interface AuthUser {
+  user_id: string;
   role: UserRole;
+  full_name?: string;
+  email?: string;
+  profile_picture?: string | null;
+  phone_number?: string | null;
+  address?: string | null;
 }
 
-// ─── Change Password ──────────────────────────────────────────────────────────
-export interface ChangePasswordRequest {
-  current_password: string;
-  new_password: string;
-  confirm_password: string;
+export interface AuthState {
+  user: AuthUser | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
 }
-
-// ─── Legacy / kept for compatibility ─────────────────────────────────────────
-export interface VerifyEmailRequest {
-  email_address: string;
-}
-
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface VerifyEmailResponse extends Record<string, unknown> {}
