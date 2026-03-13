@@ -39,7 +39,8 @@ interface SubLink {
 interface LinkType {
   label: string;
   href: string;
-  icon: React.ElementType | React.ReactNode;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  icon: any;
   subLinks?: SubLink[];
   roles?: string[];
 }
@@ -301,7 +302,8 @@ export default function DashboardWrapper({ children }: DashboardWrapperProps) {
       // DashboardSquare02Icon is an object usually.
       if (typeof Icon === "object" && !React.isValidElement(Icon)) {
         return (
-          <HugeiconsIcon icon={Icon} strokeWidth={2} className={iconClasses} />
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          <HugeiconsIcon icon={Icon as any} strokeWidth={2} className={iconClasses} />
         );
       }
 

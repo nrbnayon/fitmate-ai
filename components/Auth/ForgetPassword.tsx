@@ -65,7 +65,8 @@ const ForgetPassword = () => {
       }
     } catch (error: unknown) {
       console.error("Forgot password error:", error);
-      const errorMessage = (error as unknown)?.data?.message || "Something went wrong. Please try again.";
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const errorMessage = (error as any)?.data?.message || "Something went wrong. Please try again.";
       toast.error(errorMessage);
     }
   };

@@ -102,8 +102,6 @@ export function useUser(): UseUserReturn {
       });
   }, [isAuthenticated, user?.full_name, fetchProfile, dispatch]);
 
-  console.log(user);
-
   // ── Logout ──────────────────────────────────────────────────────────────────
   const logout = () => {
     dispatch(logoutAction()); // clears Redux + cookies via tokenStorage.clearAll()
@@ -116,8 +114,8 @@ export function useUser(): UseUserReturn {
   return {
     userId: user?.user_id ?? null,
     fullName: user?.full_name ?? null,
-    name: user?.full_name ?? null,
-    image: user?.profile_picture ?? null,
+    name: user?.full_name ?? undefined,
+    image: user?.profile_picture ?? undefined,
     email: user?.email ?? null,
     role: role,
     profilePicture: user?.profile_picture ?? null,
