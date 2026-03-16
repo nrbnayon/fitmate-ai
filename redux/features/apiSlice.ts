@@ -12,7 +12,6 @@ import type {
   FetchArgs,
   FetchBaseQueryError,
 } from "@reduxjs/toolkit/query";
-import type { RootState } from "../store";
 import type { RefreshTokenApiResponse } from "@/types/auth.types";
 
 // ─── Cookie helpers ───────────────────────────────────────────────────────────
@@ -33,15 +32,24 @@ export const getCookie = (name: string): string | null => {
 export const setCookie = (
   name: string,
   value: string,
-  expiresAt?: number, // Unix ms timestamp — pass access_token_valid_till directly
+  expiresAt?: number, // Unix ms or seconds timestamp
 ): void => {
   if (typeof document === "undefined") return;
+
+  // 1. Normalize timestamp (Auto-convert seconds to milliseconds)
+  // Unix timestamp in seconds for 2026 is ~1.7B, in ms it is ~1.7T
+  // If < 10B, it's definitely seconds.
+  let normalizedExpiry = expiresAt;
+  if (normalizedExpiry && normalizedExpiry < 10000000000) {
+    normalizedExpiry *= 1000;
+  }
+
   const encoded = encodeURIComponent(value);
   const secure = IS_PROD ? "; Secure" : "";
   const sameSite = "; SameSite=Strict";
   const path = "; path=/";
-  const expiry = expiresAt
-    ? `; expires=${new Date(expiresAt).toUTCString()}`
+  const expiry = normalizedExpiry
+    ? `; expires=${new Date(normalizedExpiry).toUTCString()}`
     : "";
   document.cookie = `${name}=${encoded}${expiry}${path}${sameSite}${secure}`;
 };
@@ -82,8 +90,16 @@ export const tokenStorage = {
   // Called on refresh — only updates the access token
   updateAccessToken: (accessToken: string) => {
     const oneHour = Date.now() + 60 * 60 * 1000;
+    const sevenDays = Date.now() + 7 * 24 * 60 * 60 * 1000;
+
     setCookie("accessToken", accessToken, oneHour);
-    setCookie("userRole", getCookie("userRole") ?? "", oneHour);
+
+    // Keep userRole valid as long as the refresh token (7 days)
+    // so rehydration works if access token expires but refresh is possible.
+    const currentRole = getCookie("userRole");
+    if (currentRole) {
+      setCookie("userRole", currentRole, sevenDays);
+    }
   },
 
   // Called on logout or auth failure
@@ -109,13 +125,14 @@ const onTokenRefreshed = (token: string) => {
 // ─── Base query ───────────────────────────────────────────────────────────────
 const rawBaseQuery = fetchBaseQuery({
   baseUrl: process.env.NEXT_PUBLIC_API_URL ?? "http://10.10.12.62:6005",
-  prepareHeaders: (headers, { getState }) => {
-    // Prefer Redux state token (most up-to-date after refresh),
-    // fall back to cookie (covers page-refresh rehydration)
-    const stateToken = (getState() as RootState).auth.user
-      ? tokenStorage.getAccessToken()
-      : null;
-    const token = stateToken ?? tokenStorage.getAccessToken();
+  prepareHeaders: (headers) => {
+    // 1. If Authorization is already set (e.g. by refresh logic), don't overwrite it
+    if (headers.has("Authorization")) {
+      return headers;
+    }
+
+    // 2. Get access token from storage
+    const token = tokenStorage.getAccessToken();
     if (token) {
       headers.set("Authorization", `Bearer ${token}`);
     }
@@ -159,44 +176,52 @@ export const baseQueryWithReauth: BaseQueryFn<
 
   isRefreshing = true;
 
-  // POST /auth/refresh-token/ with Bearer refresh token
-  // API body field is "refresh"
-  const refreshResult = await rawBaseQuery(
-    {
-      url: "/auth/refresh-token/",
-      method: "GET",
-      headers: { Authorization: `Bearer ${refreshToken}` },
-      body: { refresh: refreshToken },
-    },
-    api,
-    extraOptions,
-  );
+  try {
+    // POST /auth/refresh-token/ with Bearer refresh token
+    // API body field is "refresh"
+    const refreshResult = await rawBaseQuery(
+      {
+        url: "/auth/refresh-token/",
+        method: "POST",
+        headers: { Authorization: `Bearer ${refreshToken}` },
+        body: { refresh: refreshToken },
+      },
+      api,
+      extraOptions,
+    );
 
-  const refreshData = refreshResult.data as RefreshTokenApiResponse | undefined;
+    const refreshData = refreshResult.data as RefreshTokenApiResponse | undefined;
 
-  if (refreshData?.success && refreshData?.data?.access_token) {
-    const newToken = refreshData.data.access_token;
+    if (refreshData?.success && refreshData?.data?.access_token) {
+      const newToken = refreshData.data.access_token;
 
-    // Update cookie
-    tokenStorage.updateAccessToken(newToken);
+      // Update cookie
+      tokenStorage.updateAccessToken(newToken);
 
-    // Update Redux state — setCredentials only updates access token
-    const { setCredentials } = await import("../features/authSlice");
-    api.dispatch(setCredentials({ access_token: newToken }));
+      // Update Redux state — setCredentials only updates access token
+      const { setCredentials } = await import("../features/authSlice");
+      api.dispatch(setCredentials({ access_token: newToken }));
 
-    // Notify all waiting requests
-    onTokenRefreshed(newToken);
-    isRefreshing = false;
-
-    // Retry original request
-    result = await rawBaseQuery(args, api, extraOptions);
-  } else {
-    // Refresh failed — hard logout
-    isRefreshing = false;
-    refreshSubscribers = [];
+      // Notify all waiting requests
+      onTokenRefreshed(newToken);
+      
+      // Retry original request
+      result = await rawBaseQuery(args, api, extraOptions);
+    } else {
+      // Refresh failed — hard logout
+      onTokenRefreshed(""); // Clear waiters with empty token to trigger fallback
+      tokenStorage.clearAll();
+      const { logout } = await import("../features/authSlice");
+      api.dispatch(logout());
+    }
+  } catch (err) {
+    console.error("Token refresh fatal error:", err);
+    onTokenRefreshed("");
     tokenStorage.clearAll();
     const { logout } = await import("../features/authSlice");
     api.dispatch(logout());
+  } finally {
+    isRefreshing = false;
   }
 
   return result;
@@ -207,6 +232,6 @@ export const baseQueryWithReauth: BaseQueryFn<
 export const apiSlice = createApi({
   reducerPath: "api",
   baseQuery: baseQueryWithReauth,
-  tagTypes: ["Profile"],
+  tagTypes: ["Profile", "Dashboard", "User", "Auth"],
   endpoints: () => ({}),
 });

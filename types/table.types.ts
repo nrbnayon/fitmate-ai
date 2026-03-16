@@ -2,10 +2,10 @@
 import { ReactNode } from "react";
 
 // Base column configuration
-export interface TableColumn<T = any> {
+export interface TableColumn<T = Record<string, unknown>> {
   key: string;
   header: string;
-  accessor?: keyof T | ((row: T) => any);
+  accessor?: keyof T | ((row: T) => unknown);
   render?: (value: any, row: T, index: number) => ReactNode;
   width?: string;
   align?: "left" | "center" | "right";
@@ -15,10 +15,10 @@ export interface TableColumn<T = any> {
 }
 
 // Action configuration
-export interface TableAction<T = any> {
+export interface TableAction<T = Record<string, unknown>> {
   icon?: ReactNode;
   label?: string;
-  onClick: (row: T, index: number) => void;
+  onClick: (row: T, index: number) => void | Promise<void>;
   variant?: "primary" | "secondary" | "danger" | "success" | "warning";
   show?: (row: T) => boolean;
   disabled?: (row: T) => boolean;
@@ -37,7 +37,7 @@ export interface ConfirmationConfig {
 }
 
 // Table configuration
-export interface TableConfig<T = any> {
+export interface TableConfig<T = Record<string, unknown>> {
   columns: TableColumn<T>[];
   actions?: TableAction<T>[];
   showActions?: boolean;
@@ -53,6 +53,10 @@ export interface PaginationConfig {
   pageSizeOptions?: number[];
   showTotal?: boolean;
   position?: "top" | "bottom" | "both";
+  totalItems?: number;
+  currentPage?: number;
+  onPageChange?: (page: number) => void;
+  onPageSizeChange?: (pageSize: number) => void;
 }
 
 // Sorting configuration
@@ -78,7 +82,7 @@ export interface SelectionConfig<T = any> {
 }
 
 // Complete table props
-export interface DynamicTableProps<T = any> {
+export interface DynamicTableProps<T = Record<string, unknown>> {
   data: T[];
   config: TableConfig<T>;
   pagination?: PaginationConfig;

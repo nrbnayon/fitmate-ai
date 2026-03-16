@@ -3,127 +3,140 @@
 import { useMemo, useState } from "react";
 import { DynamicTable } from "@/components/Shared/DynamicTable";
 import { TableColumn } from "@/types/table.types";
-import { User } from "@/types/users";
 import { Trash2 } from "lucide-react";
 import Image from "next/image";
 import SearchBar from "@/components/Shared/SearchBar";
 import { toast } from "sonner";
 import { UserDetailsModal } from "./UserDetailsModal";
+import { useGetUsersQuery, useGetCreatorsQuery, useDeleteUserMutation } from "@/redux/services/userApi";
+import { TableSkeleton } from "@/components/Skeleton/TableSkeleton";
+import { UserListItem } from "@/types/userManagement.types";
+import { useEffect } from "react";
 
-interface Props {
-  initialData: User[];
-}
-
-export default function UserManagementTable({ initialData }: Props) {
+export default function UserManagementTable() {
   const [activeTab, setActiveTab] = useState<"All" | "Users" | "Creators">("All");
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [page, setPage] = useState(1);
+  const [isMounted, setIsMounted] = useState(false);
+  
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setIsMounted(true);
+  }, []);
+  const pageSize = 10;
+  
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [selectedUserRole, setSelectedUserRole] = useState<"user" | "creator" | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const filteredData = useMemo(() => {
-    let data = initialData;
+  // Fetch Users
+  const { 
+    data: userData, 
+    isLoading: isUsersLoading 
+  } = useGetUsersQuery(
+    { page, page_size: pageSize, search: searchQuery },
+    { skip: activeTab === "Creators" }
+  );
+
+  // Fetch Creators
+  const { 
+    data: creatorData, 
+    isLoading: isCreatorsLoading
+  } = useGetCreatorsQuery(
+    { page, page_size: pageSize, search: searchQuery },
+    { skip: activeTab === "Users" }
+  );
+
+  const [deleteUser] = useDeleteUserMutation();
+
+  const combinedData = useMemo(() => {
+    const users = userData?.data?.results || [];
+    const creators = creatorData?.data?.results || [];
     
-    // 1. Filter by Tab
-    if (activeTab === "Users") {
-      data = data.filter((u) => u.role === "user");
-    } else if (activeTab === "Creators") {
-      data = data.filter((u) => u.role === "creator");
+    if (activeTab === "Users") return users;
+    if (activeTab === "Creators") return creators;
+    
+    // For "All", deduplicate and prioritize creator status
+    const uniqueMap = new Map<string, UserListItem>();
+    
+    // Process users first, then creators to overwrite
+    users.forEach(u => uniqueMap.set(u.id, { ...u }));
+    creators.forEach(c => {
+        const existing = uniqueMap.get(c.id);
+        uniqueMap.set(c.id, { 
+            ...(existing || {}), 
+            ...c, 
+            creator: c.creator || existing?.creator || false 
+        });
+    });
+    
+    return Array.from(uniqueMap.values()).sort((a, b) => 
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
+  }, [activeTab, userData, creatorData]);
+
+  // If we are merging two lists locally, totalItems should match the combined set
+  const totalItems = activeTab === "All" 
+    ? combinedData.length 
+    : (activeTab === "Creators" ? creatorData?.data?.total : userData?.data?.total) || 0;
+
+  const isLoading = activeTab === "Creators" ? isCreatorsLoading : 
+                    activeTab === "Users" ? isUsersLoading : 
+                    (isUsersLoading || isCreatorsLoading);
+
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteUser(id).unwrap();
+      toast.success("User deleted successfully!");
+    } catch (error) {
+      toast.error("Failed to delete user");
+      console.error(error);
     }
-
-    // 2. Filter by Search
-    if (searchQuery) {
-        const query = searchQuery.toLowerCase();
-        data = data.filter(u => 
-            u.name.toLowerCase().includes(query) || 
-            u.email.toLowerCase().includes(query)
-        );
-    }
-
-    return data;
-  }, [activeTab, searchQuery, initialData]);
-
-  const handleDelete = (row: User) => {
-      // Simulate API call
-      setTimeout(() => {
-          toast.success("User deleted successfully!");
-          // logic to update state/filter out user would go here if this wasn't just mock data
-      }, 500); 
   };
 
-  const columns: TableColumn<User>[] = [
+  const columns: TableColumn<UserListItem>[] = [
     {
-      key: "name",
+      key: "full_name",
       header: "Name",
       render: (_, row) => (
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden relative shrink-0">
             <Image
-              src={row.image || "/images/avatar.png"}
-              alt={row.name}
+              src={row.profile_picture || "/images/avatar.png"}
+              alt={row.full_name}
               fill
               className="object-cover"
             />
           </div>
-          <span className="font-semibold text-foreground">{row.name}</span>
+          <span className="font-semibold text-foreground">{row.full_name}</span>
         </div>
       ),
       sortable: true,
-      width: "25%",
+      width: "30%",
     },
     {
       key: "email",
       header: "Email address",
       accessor: "email",
-      width: "20%",
+      width: "25%",
     },
     {
-      key: "location",
-      header: "Location",
-      accessor: "location",
-    },
-    {
-      key: "date",
+      key: "created_at",
       header: "Joined",
-      accessor: "date",
+      render: (val) => isMounted ? new Date(val).toLocaleDateString() : "...",
       sortable: true,
     },
     {
-        key: "role",
+        key: "creator",
         header: "User type",
         render: (_, row) => {
-            const isCreator = row.role === 'creator';
-            const isAdmin = row.role === 'admin';
-            
-            let bgClass = "bg-[#F4EBFF] text-[#6941C6]"; // Default User (Purple)
-            let text = "Users";
-
-            if (isCreator) {
-                bgClass = "bg-[#E3EFFC] text-[#175CD3]"; // Creator (Blue)
-                text = "Creator";
-            } else if (isAdmin) {
-                bgClass = "bg-[#FFEEEE] text-[#D92D20]"; // Admin (Redish/Pinkish?) or similar distinctive
-                text = "Admin";
-            } else {
-                // Explicit check for 'user' role just in case
-                bgClass = "bg-[#F4EBFF] text-[#6941C6]";
-                text = "Users";
-            }
+            const isCreator = row.creator;
+            const bgClass = isCreator ? "bg-[#E3EFFC] text-[#175CD3]" : "bg-[#F4EBFF] text-[#6941C6]";
+            const text = isCreator ? "Creator" : "User";
 
             return (
                 <span className={`px-3 py-1 rounded-full text-xs font-medium ${bgClass}`}>
                     {text}
-                </span>
-            )
-        }
-    },
-    {
-        key: "status",
-        header: "Status",
-        render: (_, row) => {
-            const isActive = row.status === 'Active';
-            return (
-                <span className={`px-3 py-1 rounded-full text-xs font-medium ${isActive ? 'bg-[#ECFDF3] text-[#027A48]' : 'bg-yellow-100 text-yellow-700'}`}>
-                    {row.status || 'Active'}
                 </span>
             )
         }
@@ -134,7 +147,7 @@ export default function UserManagementTable({ initialData }: Props) {
     {
       label: "Delete",
       icon: <Trash2 className="w-5 h-5 text-red-400 hover:text-red-500 transition-colors cursor-pointer" />,
-      onClick: (row: User) => handleDelete(row), // wired to local handler with toast
+      onClick: (row: UserListItem) => handleDelete(row.id),
       requiresConfirmation: true,
       confirmationConfig: {
           title: "Delete User",
@@ -145,67 +158,82 @@ export default function UserManagementTable({ initialData }: Props) {
   ];
 
   return (
-    <>
+    <div className="space-y-6">
         {/* Controls Header */}
         <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col md:flex-row items-center justify-between gap-4">
             
             {/* Tabs */}
             <div className="flex items-center p-1 bg-white rounded-lg border border-gray-100/50">
-                <button 
-                    onClick={() => setActiveTab("All")}
-                    className={`px-6 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer ${activeTab === 'All' ? 'bg-[#C14A7A] text-white shadow-md' : 'text-secondary hover:bg-gray-50'}`}
-                >
-                    All
-                </button>
-                <button 
-                    onClick={() => setActiveTab("Users")}
-                    className={`px-6 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer ${activeTab === 'Users' ? 'bg-[#C14A7A] text-white shadow-md' : 'text-secondary hover:bg-gray-50'}`}
-                >
-                    Users
-                </button>
-                <button 
-                    onClick={() => setActiveTab("Creators")}
-                    className={`px-6 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer ${activeTab === 'Creators' ? 'bg-[#C14A7A] text-white shadow-md' : 'text-secondary hover:bg-gray-50'}`}
-                >
-                    Creators
-                </button>
+                {(["All", "Users", "Creators"] as const).map((tab) => (
+                    <button 
+                        key={tab}
+                        onClick={() => {
+                            setActiveTab(tab);
+                            setPage(1);
+                        }}
+                        className={`px-6 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer ${activeTab === tab ? 'bg-[#C14A7A] text-white shadow-md' : 'text-secondary hover:bg-gray-50'}`}
+                    >
+                        {tab}
+                    </button>
+                ))}
             </div>
 
             {/* Search */}
             <div className="w-full md:w-auto">
                 <SearchBar 
-                    placeholder="Search" 
+                    placeholder="Search users..." 
                     className="w-full md:w-[300px] bg-white border border-gray-200" 
-                    onSearch={setSearchQuery}
+                    onSearch={(query) => {
+                        setSearchQuery(query);
+                        setPage(1);
+                    }}
                 />
             </div>
         </div>
 
-        {/* Table */}
-        <DynamicTable
-          data={filteredData}
-          config={{
-            columns,
-            showActions: true,
-            actions,
-            actionsLabel: "Action",
-            actionsAlign: "center",
-          }}
-          pagination={{ enabled: true, pageSize: 8 }}
-          className="border border-gray-100 shadow-sm rounded-2xl overflow-hidden"
-          headerClassName="bg-primary text-white"
-          onRowClick={(row) => {
-              setSelectedUser(row);
-              setIsModalOpen(true);
-          }}
-        />
+        {/* Table Area */}
+        {isLoading ? (
+            <div className="bg-white rounded-2xl border border-gray-100 p-6">
+                <TableSkeleton rowCount={pageSize} />
+            </div>
+        ) : (
+            <DynamicTable
+                data={combinedData}
+                config={{
+                    columns,
+                    showActions: true,
+                    actions,
+                    actionsLabel: "Action",
+                    actionsAlign: "center",
+                }}
+                pagination={{ 
+                    enabled: true, 
+                    pageSize,
+                    currentPage: page,
+                    onPageChange: setPage,
+                    totalItems
+                }}
+                className="border border-gray-100 shadow-sm rounded-2xl overflow-hidden"
+                headerClassName="bg-primary text-white"
+                onRowClick={(row) => {
+                    setSelectedUserId(row.id);
+                    setSelectedUserRole(row.creator ? "creator" : "user");
+                    setIsModalOpen(true);
+                }}
+            />
+        )}
 
-        {/* Dynamic Modal */}
+        {/* User Details Modal */}
         <UserDetailsModal 
-            user={selectedUser} 
+            userId={selectedUserId}
+            userRole={selectedUserRole}
             isOpen={isModalOpen} 
-            onClose={() => setIsModalOpen(false)} 
+            onClose={() => {
+                setIsModalOpen(false);
+                setSelectedUserId(null);
+                setSelectedUserRole(null);
+            }} 
         />
-    </>
+    </div>
   );
 }

@@ -209,7 +209,7 @@ export default function ProductsTable({ initialData }: Props) {
                                 <ChevronDown size={16} />
                             </button>
                             {/* Simple Dropdown Logic */}
-                            <div className="absolute top-full left-0 mt-1 w-40 bg-white rounded-lg shadow-lg border border-gray-100 hidden group-hover:block z-20">
+                            <div className="absolute top-full left-0 w-40 bg-white rounded-lg shadow-lg border border-gray-100 hidden group-hover:block z-20">
                                 {["All", "Lipstick", "Blush", "Foundation", "Eyeshadow", "Mascara"].map(cat => (
                                     <button 
                                         key={cat}
