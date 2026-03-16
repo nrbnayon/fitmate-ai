@@ -291,7 +291,7 @@
 //
 // Project route map (from app/ file tree):
 //
-//   app/page.tsx                              → "/"          (root, dual behaviour)
+//   app/page.tsx                              → "/"          (root, dual behavior)
 //
 //   app/(auth)/signin/page.tsx                → /signin
 //   app/(auth)/forgot-password/page.tsx       → /forgot-password
@@ -440,8 +440,9 @@ export async function proxy(request: NextRequest) {
   // STEP 1: Read auth state from cookies
   // ============================================
   const accessToken = request.cookies.get("accessToken")?.value;
+  const refreshToken = request.cookies.get("refreshToken")?.value;
   const userRole = request.cookies.get("userRole")?.value ?? "";
-  const isAuthenticated = !!accessToken;
+  const isAuthenticated = !!accessToken || !!refreshToken;
   const isAdmin = isAuthenticated && userRole === ROLES.ADMIN;
 
   // ============================================
@@ -453,7 +454,7 @@ export async function proxy(request: NextRequest) {
   }
 
   // ============================================
-  // STEP 3: Root "/" — dual behaviour
+  // STEP 3: Root "/" — dual behavior
   //   Authenticated admin  → /dashboard
   //   Unauthenticated      → render app/page.tsx (landing or /signin redirect)
   // ============================================
@@ -499,7 +500,7 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  // 6b. Authenticated but role cookie is missing / unrecognised
+  // 6b. Authenticated but role cookie is missing / unrecognized
   if (!userRole) {
     const loginUrl = new URL("/signin", request.url);
     loginUrl.searchParams.set("error", "missing_role");
@@ -536,7 +537,7 @@ export const config = {
     /*
      * Intercept ALL paths EXCEPT:
      *  - _next/static            compiled JS / CSS bundles
-     *  - _next/image             Next.js image optimisation
+     *  - _next/image             Next.js image optimization
      *  - favicon.ico, favicon-96x96.png
      *  - PWA files               manifest.json, manifest.webmanifest,
      *                            sw.js, swe-worker-*.js, workbox-*.js,

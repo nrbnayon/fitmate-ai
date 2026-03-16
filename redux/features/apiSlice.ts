@@ -62,14 +62,21 @@ export const tokenStorage = {
     accessToken: string,
     refreshToken: string,
     role: string,
+    // refreshExpiresAt: number, // if server provides expiry time
     accessTokenValidTill: number,
   ) => {
     const refreshExpiry = Date.now() + 7 * 24 * 60 * 60 * 1000; // 7 days
     setCookie("accessToken", accessToken, accessTokenValidTill);
     setCookie("refreshToken", refreshToken, refreshExpiry);
-    // userRole cookie uses same expiry as access token
-    // proxy.ts reads this cookie for route protection
-    setCookie("userRole", role, accessTokenValidTill);
+    // setCookie("accessToken", accessToken, Date.now() + 60 * 60 * 1000); // 1hr
+    // setCookie("refreshToken", refreshToken, refreshExpiresAt); // server-controlled
+    // setCookie(
+    //   "userRole",
+    //   role ?? getCookie("userRole") ?? "",
+    //   refreshExpiresAt,
+    // );
+    // userRole cookie uses same expiry as refresh token
+    setCookie("userRole", role, refreshExpiry);
   },
 
   // Called on refresh — only updates the access token

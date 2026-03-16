@@ -153,19 +153,19 @@ export default function UserManagementTable({ initialData }: Props) {
             <div className="flex items-center p-1 bg-white rounded-lg border border-gray-100/50">
                 <button 
                     onClick={() => setActiveTab("All")}
-                    className={`px-6 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === 'All' ? 'bg-[#C14A7A] text-white shadow-md' : 'text-secondary hover:bg-gray-50'}`}
+                    className={`px-6 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer ${activeTab === 'All' ? 'bg-[#C14A7A] text-white shadow-md' : 'text-secondary hover:bg-gray-50'}`}
                 >
                     All
                 </button>
                 <button 
                     onClick={() => setActiveTab("Users")}
-                    className={`px-6 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === 'Users' ? 'bg-[#C14A7A] text-white shadow-md' : 'text-secondary hover:bg-gray-50'}`}
+                    className={`px-6 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer ${activeTab === 'Users' ? 'bg-[#C14A7A] text-white shadow-md' : 'text-secondary hover:bg-gray-50'}`}
                 >
                     Users
                 </button>
                 <button 
                     onClick={() => setActiveTab("Creators")}
-                    className={`px-6 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === 'Creators' ? 'bg-[#C14A7A] text-white shadow-md' : 'text-secondary hover:bg-gray-50'}`}
+                    className={`px-6 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer ${activeTab === 'Creators' ? 'bg-[#C14A7A] text-white shadow-md' : 'text-secondary hover:bg-gray-50'}`}
                 >
                     Creators
                 </button>

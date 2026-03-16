@@ -23,9 +23,10 @@ function buildInitialState(): AuthState {
   }
 
   const accessToken = tokenStorage.getAccessToken();
+  const refreshToken = tokenStorage.getRefreshToken();
   const role = tokenStorage.getUserRole() as UserRole | null;
 
-  if (accessToken && role) {
+  if ((accessToken || refreshToken) && role) {
     return {
       user: {
         user_id: "", // will be enriched when getProfile is called
