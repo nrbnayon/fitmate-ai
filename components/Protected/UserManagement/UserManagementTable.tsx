@@ -11,18 +11,11 @@ import { UserDetailsModal } from "./UserDetailsModal";
 import { useGetUsersQuery, useGetCreatorsQuery, useDeleteUserMutation } from "@/redux/services/userApi";
 import { TableSkeleton } from "@/components/Skeleton/TableSkeleton";
 import { UserListItem } from "@/types/userManagement.types";
-import { useEffect } from "react";
 
 export default function UserManagementTable() {
   const [activeTab, setActiveTab] = useState<"All" | "Users" | "Creators">("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(1);
-  const [isMounted, setIsMounted] = useState(false);
-  
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setIsMounted(true);
-  }, []);
   const pageSize = 10;
   
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
@@ -60,11 +53,11 @@ export default function UserManagementTable() {
     const uniqueMap = new Map<string, UserListItem>();
     
     // Process users first, then creators to overwrite
-    users.forEach(u => uniqueMap.set(u.id, { ...u }));
-    creators.forEach(c => {
+    users.forEach((u: UserListItem) => uniqueMap.set(u.id, { ...u }));
+    creators.forEach((c: UserListItem) => {
         const existing = uniqueMap.get(c.id);
         uniqueMap.set(c.id, { 
-            ...(existing || {}), 
+            ...(existing || {} as UserListItem), 
             ...c, 
             creator: c.creator || existing?.creator || false 
         });
@@ -123,7 +116,11 @@ export default function UserManagementTable() {
     {
       key: "created_at",
       header: "Joined",
-      render: (val) => isMounted ? new Date(val).toLocaleDateString() : "...",
+      render: (val) => (
+        <span suppressHydrationWarning>
+            {new Date(val).toLocaleDateString()}
+        </span>
+      ),
       sortable: true,
     },
     {

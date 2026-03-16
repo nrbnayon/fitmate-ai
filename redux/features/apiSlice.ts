@@ -87,15 +87,17 @@ export const tokenStorage = {
     setCookie("userRole", role, refreshExpiry);
   },
 
-  // Called on refresh — only updates the access token
-  updateAccessToken: (accessToken: string) => {
+  // Called on refresh — updates the access token, and optionally the refresh token
+  updateTokens: (accessToken: string, refreshToken?: string) => {
     const oneHour = Date.now() + 60 * 60 * 1000;
     const sevenDays = Date.now() + 7 * 24 * 60 * 60 * 1000;
 
     setCookie("accessToken", accessToken, oneHour);
+    if (refreshToken) {
+      setCookie("refreshToken", refreshToken, sevenDays);
+    }
 
     // Keep userRole valid as long as the refresh token (7 days)
-    // so rehydration works if access token expires but refresh is possible.
     const currentRole = getCookie("userRole");
     if (currentRole) {
       setCookie("userRole", currentRole, sevenDays);
@@ -126,7 +128,13 @@ const onTokenRefreshed = (token: string) => {
 const rawBaseQuery = fetchBaseQuery({
   baseUrl: process.env.NEXT_PUBLIC_API_URL ?? "http://10.10.12.62:6005",
   prepareHeaders: (headers) => {
-    // 1. If Authorization is already set (e.g. by refresh logic), don't overwrite it
+    // 0. Check for a skip-auth flag
+    if (headers.has("x-skip-auth")) {
+      headers.delete("x-skip-auth");
+      return headers;
+    }
+
+    // 1. If Authorization is already set, don't overwrite it
     if (headers.has("Authorization")) {
       return headers;
     }
@@ -177,13 +185,11 @@ export const baseQueryWithReauth: BaseQueryFn<
   isRefreshing = true;
 
   try {
-    // POST /auth/refresh-token/ with Bearer refresh token
-    // API body field is "refresh"
     const refreshResult = await rawBaseQuery(
       {
         url: "/auth/refresh-token/",
         method: "POST",
-        headers: { Authorization: `Bearer ${refreshToken}` },
+        headers: { "x-skip-auth": "true" },
         body: { refresh: refreshToken },
       },
       api,
@@ -193,14 +199,17 @@ export const baseQueryWithReauth: BaseQueryFn<
     const refreshData = refreshResult.data as RefreshTokenApiResponse | undefined;
 
     if (refreshData?.success && refreshData?.data?.access_token) {
-      const newToken = refreshData.data.access_token;
+      const { access_token: newToken, refresh_token: newRefreshToken } = refreshData.data;
 
-      // Update cookie
-      tokenStorage.updateAccessToken(newToken);
+      // Update cookies
+      tokenStorage.updateTokens(newToken, newRefreshToken);
 
-      // Update Redux state — setCredentials only updates access token
+      // Update Redux state
       const { setCredentials } = await import("../features/authSlice");
-      api.dispatch(setCredentials({ access_token: newToken }));
+      api.dispatch(setCredentials({ 
+        access_token: newToken,
+        refresh_token: newRefreshToken 
+      }));
 
       // Notify all waiting requests
       onTokenRefreshed(newToken);
@@ -232,6 +241,6 @@ export const baseQueryWithReauth: BaseQueryFn<
 export const apiSlice = createApi({
   reducerPath: "api",
   baseQuery: baseQueryWithReauth,
-  tagTypes: ["Profile", "Dashboard", "User", "Auth"],
+  tagTypes: ["Profile", "Dashboard", "User", "Auth", "Product", "ProductCategory"],
   endpoints: () => ({}),
 });

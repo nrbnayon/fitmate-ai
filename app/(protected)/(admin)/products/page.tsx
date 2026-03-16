@@ -1,5 +1,4 @@
 import DashboardHeader from "@/components/Shared/DashboardHeader";
-import { productsData } from "@/data/productsData";
 import ProductsTable from "@/components/Protected/Products/ProductsTable";
 
 export default function ProductsPage() {
@@ -8,7 +7,7 @@ export default function ProductsPage() {
       <DashboardHeader title="Product Management" description="Xandra Platform" />
 
       <main className="flex-1 p-4 md:p-8 space-y-6">
-        <ProductsTable initialData={productsData} />
+        <ProductsTable />
       </main>
     </div>
   );
