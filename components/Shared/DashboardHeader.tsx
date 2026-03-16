@@ -17,7 +17,7 @@ export default function DashboardHeader({
   return (
     <div className="bg-white flex flex-row justify-between items-center py-2 px-4 md:px-8 border-b border-border gap-4">
       <div className="flex flex-col items-start justify-center">
-        <h1 className="text-base md:text-2xl lg:text-3xl font-bold text-foreground">
+        <h1 className="text-lg sm:text-2xl lg:text-3xl font-bold text-foreground">
           {title}
         </h1>
         {description && (
@@ -27,7 +27,7 @@ export default function DashboardHeader({
         )}
       </div>
 
-      <div className="hidden md:flex items-center gap-6">
+      <div className="flex items-center gap-3 md:gap-6">
         {/* Notification Icon */}
         <Link 
           href="/notifications"
@@ -53,7 +53,7 @@ export default function DashboardHeader({
               className="object-cover w-full h-full"
             />
           </div>
-          <div className="hidden md:flex flex-col">
+          <div className="hidden lg:flex flex-col">
             <p className="text-sm font-bold text-foreground font-nunito">
               {name || "User"}
             </p>

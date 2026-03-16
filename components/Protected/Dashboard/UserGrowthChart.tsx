@@ -28,7 +28,7 @@ export function UserGrowthChart({ data = [] }: UserGrowthChartProps) {
   return (
     <div className="bg-white p-6 rounded-2xl shadow-none border border-border">
       <h3 className="text-lg font-semibold mb-6 text-foreground">User Growth</h3>
-      <div className="h-75 w-full">
+      <div className="h-[300px] w-full">
         <ResponsiveContainer width="100%" height="100%" minWidth={0}>
           <BarChart data={chartData} barSize={40}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#EAECF0" />

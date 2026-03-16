@@ -105,9 +105,9 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-[#F9FAFB]">
       <DashboardHeader title="Dashboard" description="Xandra Platform" />
 
-      <main className="p-4 md:p-8 space-y-8">
+      <main className="p-4 md:p-8 space-y-6 md:space-y-8 min-w-0">
         {/* Stats Section */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
           {stats?.map((stat, index) => (
             <StatsCard
               key={index}
@@ -123,7 +123,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Charts Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 min-w-0">
           <RevenueChart data={dashboardData.revenue_trend} />
           <UserGrowthChart data={dashboardData.user_growth} />
         </div>
