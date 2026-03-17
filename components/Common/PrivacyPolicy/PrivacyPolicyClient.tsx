@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -9,36 +8,41 @@ import { Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 
+import { 
+  useGetPoliciesQuery, 
+  useCreatePolicyMutation, 
+  useUpdatePolicyMutation, 
+  useDeletePolicyMutation 
+} from "@/redux/services/userApi";
+
 interface Policy {
   id: string;
   title: string;
   description: string;
 }
 
-const MOCK_POLICIES: Policy[] = [
-  {
-    id: "1",
-    title: "Top 10 places of Colorado",
-    description:
-      "I'm a Product Designer based in Melbourne, Australia. I specialise in UX/UI design, brand strategy, and Webflow development.",
-  },
-];
-
 export default function PrivacyPolicyClient() {
-  const router = useRouter();
+  const { data: policiesData, isLoading: isPoliciesLoading } = useGetPoliciesQuery();
+  const [createPolicy] = useCreatePolicyMutation();
+  const [updatePolicy] = useUpdatePolicyMutation();
+  const [deletePolicy] = useDeletePolicyMutation();
+
   const [policies, setPolicies] = useState<Policy[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [deletedIds, setDeletedIds] = useState<number[]>([]);
   const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
 
   useEffect(() => {
-    // Simulate loading data
-    const timer = setTimeout(() => {
-      setPolicies(MOCK_POLICIES);
-      setIsLoading(false);
-    }, 1000);
-    return () => clearTimeout(timer);
-  }, []);
+    if (policiesData?.data) {
+      setPolicies(policiesData.data.map(p => ({
+        id: String(p.id),
+        title: p.title,
+        description: p.description
+      })));
+      setDeletedIds([]);
+      setHasChanges(false);
+    }
+  }, [policiesData]);
 
   const handleTitleChange = (id: string, value: string) => {
     setPolicies(
@@ -61,29 +65,21 @@ export default function PrivacyPolicyClient() {
   };
 
   const handleAddPolicy = () => {
-    const newId = Date.now().toString();
+    const newId = `new-${Date.now()}`;
     setPolicies([
       ...policies,
       { id: newId, title: "", description: "" },
     ]);
     setHasChanges(true);
-    toast.success("New policy added", {
-      description: "Fill in the details for the new policy.",
-    });
   };
 
   const handleDeletePolicy = (id: string) => {
-    if (policies.length === 1) {
-      toast.error("Cannot delete", {
-        description: "At least one policy must remain.",
-      });
-      return;
+    const numericId = parseInt(id);
+    if (!isNaN(numericId)) {
+      setDeletedIds([...deletedIds, numericId]);
     }
     setPolicies(policies.filter((p) => p.id !== id));
     setHasChanges(true);
-    toast.success("Policy deleted", {
-      description: "The policy has been removed.",
-    });
   };
 
   const handleSave = async () => {
@@ -101,17 +97,39 @@ export default function PrivacyPolicyClient() {
 
     setIsSaving(true);
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      // 1. Delete policies that were marked for deletion
+      if (deletedIds.length > 0) {
+        await Promise.all(deletedIds.map(id => deletePolicy(id).unwrap()));
+      }
+
+      // 2. Create or Update existing policies
+      await Promise.all(policies.map(policy => {
+        const isNew = policy.id.startsWith("new-");
+        if (isNew) {
+          return createPolicy({
+            title: policy.title,
+            description: policy.description
+          }).unwrap();
+        } else {
+          return updatePolicy({
+            id: parseInt(policy.id),
+            payload: {
+              title: policy.title,
+              description: policy.description
+            }
+          }).unwrap();
+        }
+      }));
 
       toast.success("Policies saved", {
         description: "All privacy policies have been updated successfully.",
       });
       setHasChanges(false);
     } catch (error) {
-      console.error(error)
+      console.error(error);
+      const err = error as { data?: { message?: string } };
       toast.error("Failed to save", {
-        description: "Please try again.",
+        description: err.data?.message || "Please try again.",
       });
     } finally {
       setIsSaving(false);
@@ -125,10 +143,22 @@ export default function PrivacyPolicyClient() {
       );
       if (!confirm) return;
     }
-    router.back();
+    // Revert local state to original data
+    if (policiesData?.data) {
+      setPolicies(policiesData.data.map(p => ({
+        id: String(p.id),
+        title: p.title,
+        description: p.description
+      })));
+      setDeletedIds([]);
+      setHasChanges(false);
+    } else {
+      setPolicies([]);
+      setHasChanges(false);
+    }
   };
 
-  if (isLoading) {
+  if (isPoliciesLoading) {
     return (
       <div className="w-full flex-1 flex flex-col">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
@@ -220,7 +250,7 @@ export default function PrivacyPolicyClient() {
                   onChange={(e) =>
                     handleDescriptionChange(policy.id, e.target.value)
                   }
-                  className="min-h-35 bg-white dark:bg-foreground border-gray-300 dark:border-secondary text-foreground dark:text-gray-100 resize-none focus:ring-2 focus:ring-primary/20"
+                  className="min-h-24 bg-white dark:bg-foreground border-gray-300 dark:border-secondary text-foreground dark:text-gray-100 focus:ring-2 focus:ring-primary/20"
                   placeholder="Enter policy description"
                 />
                 <div className="text-right text-xs text-gray-500   font-medium">

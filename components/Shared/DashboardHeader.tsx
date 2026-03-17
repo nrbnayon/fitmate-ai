@@ -3,7 +3,7 @@
 import { useUser } from "@/hooks/useUser";
 import Image from "next/image";
 import Link from "next/link";
-import { Bell } from "lucide-react";
+// import { Bell } from "lucide-react";
 
 export default function DashboardHeader({
   title,
@@ -29,15 +29,14 @@ export default function DashboardHeader({
 
       <div className="flex items-center gap-3 md:gap-6">
         {/* Notification Icon */}
-        <Link 
+        {/* <Link 
           href="/notifications"
           className="relative p-2.5 bg-[#F5F6FA] hover:bg-gray-100 rounded-full transition-colors border border-transparent"
           aria-label="Notifications"
         >
           <Bell className="w-5 h-5 text-blue-500" />
-          {/* Notification indicator dot */}
           <span className="absolute top-2.5 right-3 w-2 h-2 bg-red-500 rounded-full border border-white translate-x-1/2 -translate-y-1/2"></span>
-        </Link>
+        </Link> */}
 
         {/* User Profile */}
         <Link

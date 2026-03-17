@@ -122,12 +122,12 @@ export default function DashboardWrapper({ children }: DashboardWrapperProps) {
         icon: <ShieldCheck />,
         roles: ["admin"],
       },
-      {
-        label: "Notifications",
-        href: "/notifications",
-        icon: <Bell className="w-5 h-5" />,
-        roles: ["admin"],
-      },
+      // {
+      //   label: "Notifications",
+      //   href: "/notifications",
+      //   icon: <Bell className="w-5 h-5" />,
+      //   roles: ["admin"],
+      // },
       {
         label: "Settings",
         href: "/settings",

@@ -301,7 +301,7 @@ export default function ProfileClient() {
             >
               Account Settings
             </button>
-            <button
+            {/* <button
               onClick={() => setActiveSection("notifications")}
               className={`w-full text-left px-4 py-3 rounded-lg font-semibold transition-all ${activeSection === "notifications"
                 ? "bg-green-50 text-primary border-l-4 border-primary"
@@ -309,7 +309,7 @@ export default function ProfileClient() {
                 }`}
             >
               Notifications
-            </button>
+            </button> */}
           </div>
 
           {/* Form Fields */}
@@ -640,11 +640,11 @@ export default function ProfileClient() {
             )}
 
             {/* Notifications Section */}
-            {activeSection === "notifications" && (
+            {/* {activeSection === "notifications" && (
               <div>
                 <NotificationsClient />
               </div>
-            )}
+            )} */}
           </div>
         </div>
       </div>

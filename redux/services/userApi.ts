@@ -7,7 +7,15 @@ import {
     CreatorDetailsResponse,
     DeleteUserResponse
 } from "@/types/userManagement.types";
-import { CommissionTrackingResponse } from "@/types/commissionTracking";
+import { 
+    CommissionTrackingResponse 
+} from "@/types/commissionTracking";
+import { 
+    PolicyListResponse, 
+    SinglePolicyResponse, 
+    PolicyMutationPayload 
+} from "@/types/policies";
+import type { ApiResponse } from "@/types/auth.types";
 
 export const userApi = apiSlice.injectEndpoints({
     overrideExisting: true,
@@ -84,6 +92,48 @@ export const userApi = apiSlice.injectEndpoints({
                     ? [{ type: 'Commission' as const, id: 'LIST' }]
                     : [{ type: 'Commission', id: 'LIST' }],
         }),
+
+        // 7. Get Policies
+        getPolicies: builder.query<PolicyListResponse, void>({
+            query: () => "/profile/policies/",
+            providesTags: (result) =>
+                result?.data ? [
+                    ...result.data.map(({ id }) => ({ type: 'Policy' as const, id })),
+                    { type: 'Policy', id: 'LIST' }
+                ] : [{ type: 'Policy', id: 'LIST' }],
+        }),
+
+        // 8. Create Policy
+        createPolicy: builder.mutation<SinglePolicyResponse, PolicyMutationPayload>({
+            query: (payload) => ({
+                url: "/profile/policies/",
+                method: "POST",
+                body: payload,
+            }),
+            invalidatesTags: [{ type: 'Policy', id: 'LIST' }],
+        }),
+
+        // 9. Update Policy
+        updatePolicy: builder.mutation<SinglePolicyResponse, { id: number; payload: PolicyMutationPayload }>({
+            query: ({ id, payload }) => ({
+                url: `/profile/policies/${id}/`,
+                method: "PUT",
+                body: payload,
+            }),
+            invalidatesTags: (result, error, { id }) => [
+                { type: 'Policy', id },
+                { type: 'Policy', id: 'LIST' }
+            ],
+        }),
+
+        // 10. Delete Policy
+        deletePolicy: builder.mutation<ApiResponse<null>, number>({
+            query: (id) => ({
+                url: `/profile/policies/${id}/`,
+                method: "DELETE",
+            }),
+            invalidatesTags: [{ type: 'Policy', id: 'LIST' }],
+        }),
     }),
 });
 
@@ -96,4 +146,8 @@ export const {
     useLazyGetUserDetailsQuery,
     useLazyGetCreatorDetailsQuery,
     useGetCommissionTrackingQuery,
+    useGetPoliciesQuery,
+    useCreatePolicyMutation,
+    useUpdatePolicyMutation,
+    useDeletePolicyMutation,
 } = userApi;
