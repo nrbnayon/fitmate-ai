@@ -137,6 +137,7 @@ const nextConfig: NextConfig = {
   turbopack: {},
   // Your other config options here
   images: {
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: "http",
