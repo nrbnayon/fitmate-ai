@@ -1,37 +1,63 @@
 "use client";
 
 import { DynamicTable } from "@/components/Shared/DynamicTable";
-import { paymentHistoryData } from "@/data/paymentHistoryData";
 import { PaymentHistory } from "@/types/paymentHistory";
 import { TableConfig } from "@/types/table.types";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Delete02Icon } from "@hugeicons/core-free-icons";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { DeleteConfirmationModal } from "@/components/Shared/DeleteConfirmationModal";
+import { 
+  useGetPaymentHistoryQuery, 
+  useDeletePaymentHistoryMutation 
+} from "@/redux/services/productApi";
+import { toast } from "sonner";
 
 export default function PaymentHistoryTable() {
-  const [data, setData] = useState<PaymentHistory[]>(paymentHistoryData);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [rowToDelete, setRowToDelete] = useState<{ row: PaymentHistory; index: number } | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(8);
+  
+  const { data: response, isLoading, isFetching } = useGetPaymentHistoryQuery({
+    search: searchQuery || undefined,
+    page: currentPage,
+    page_size: pageSize,
+  });
 
-  const handleDeleteClick = (row: PaymentHistory, index: number) => {
-    setRowToDelete({ row, index });
+  const [deletePayment, { isLoading: isDeleting }] = useDeletePaymentHistoryMutation();
+
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [rowToDelete, setRowToDelete] = useState<PaymentHistory | null>(null);
+
+  const handleDeleteClick = (row: PaymentHistory) => {
+    setRowToDelete(row);
     setIsDeleteModalOpen(true);
   };
 
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = async () => {
     if (rowToDelete) {
-      const newData = data.filter((_, i) => i !== rowToDelete.index);
-      setData(newData);
-      setIsDeleteModalOpen(false);
-      setRowToDelete(null);
+      try {
+        const res = await deletePayment(rowToDelete.id).unwrap();
+        if (res.success) {
+          toast.success(res.message || "Payment record deleted successfully");
+        } else {
+          toast.error(res.message || "Failed to delete payment record");
+        }
+      } catch (error: any) {
+        toast.error(error?.data?.message || "An error occurred while deleting");
+      } finally {
+        setIsDeleteModalOpen(false);
+        setRowToDelete(null);
+      }
     }
   };
+
+  const tableData = useMemo(() => response?.data?.results || [], [response]);
 
   const tableConfig: TableConfig<PaymentHistory> = {
     columns: [
       {
-        key: "paymentId",
+        key: "payment_id",
         header: "Payment ID",
         sortable: true,
       },
@@ -41,17 +67,19 @@ export default function PaymentHistoryTable() {
         sortable: true,
       },
       {
-        key: "date",
+        key: "created_at",
         header: "Date",
         sortable: true,
+        render: (value) => new Date(value).toLocaleDateString(),
       },
       {
         key: "amount",
         header: "Amount",
         sortable: true,
+        render: (value) => `$${parseFloat(value).toFixed(2)}`,
       },
       {
-        key: "transaction",
+        key: "transaction_method",
         header: "Transaction",
         sortable: true,
         render: (value) => (
@@ -69,7 +97,7 @@ export default function PaymentHistoryTable() {
             className="text-secondary cursor-pointer hover:text-red-500 transition-colors"
           />
         ),
-        onClick: (row, index) => handleDeleteClick(row, index),
+        onClick: (row) => handleDeleteClick(row),
         label: "Delete",
       },
     ],
@@ -79,10 +107,21 @@ export default function PaymentHistoryTable() {
   return (
     <div className="w-full">
       <DynamicTable
-        data={data}
+        data={tableData}
         config={tableConfig}
-        filter={{ enabled: true, searchKeys: ["paymentId", "customer", "transaction"] }}
-        pagination={{ enabled: true, pageSize: 8 }}
+        loading={isLoading || isFetching}
+        filter={{ 
+          enabled: true, 
+          searchKeys: ["payment_id", "customer", "transaction_method"],
+          onSearchChange: (query) => setSearchQuery(query)
+        }}
+        pagination={{ 
+          enabled: true, 
+          pageSize: pageSize,
+          totalItems: response?.data?.count || 0,
+          currentPage: currentPage,
+          onPageChange: (page) => setCurrentPage(page)
+        }}
         headerClassName="bg-[#BA4E76] text-white"
         rowClassName="border-b border-[#EAECF0]"
       />
@@ -93,6 +132,7 @@ export default function PaymentHistoryTable() {
         onConfirm={handleConfirmDelete}
         title="Delete Payment Record"
         description="Are you sure you want to delete this payment record? This action cannot be undone."
+        isLoading={isDeleting}
       />
     </div>
   );

@@ -1,8 +1,20 @@
 export interface PaymentHistory {
-  id: string;
-  paymentId: string;
+  id: number;
+  payment_id: string;
   customer: string;
-  date: string;
+  created_at: string;
   amount: string;
-  transaction: string;
+  transaction_method: string;
+}
+
+export interface PaymentHistoryResponse {
+  success: boolean;
+  status: number;
+  message: string;
+  data: {
+    count: number;
+    next: string | null;
+    previous: string | null;
+    results: PaymentHistory[];
+  };
 }

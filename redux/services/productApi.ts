@@ -7,6 +7,9 @@ import type {
   SingleCategoryResponse,
   SingleProductResponse,
 } from "@/types/products";
+import type {
+  PaymentHistoryResponse,
+} from "@/types/paymentHistory";
 import type { ApiResponse } from "@/types/auth.types";
 
 export interface GetProductsParams {
@@ -158,6 +161,35 @@ export const productApi = apiSlice.injectEndpoints({
         { type: "Product", id: "LIST" },
       ],
     }),
+
+    getPaymentHistory: builder.query<PaymentHistoryResponse, { search?: string; page?: number; page_size?: number }>({
+      query: ({ search, page = 1, page_size = 10 } = {}) => ({
+        url: "/products/payment-history/",
+        method: "GET",
+        params: { search, page, page_size },
+      }),
+      providesTags: (result) =>
+        result?.data?.results
+          ? [
+              ...result.data.results.map((item) => ({
+                type: "PaymentHistory" as const,
+                id: item.id,
+              })),
+              { type: "PaymentHistory" as const, id: "LIST" },
+            ]
+          : [{ type: "PaymentHistory" as const, id: "LIST" }],
+    }),
+
+    deletePaymentHistory: builder.mutation<ApiResponse<null>, number>({
+      query: (id) => ({
+        url: `/products/payment-history/${id}/`,
+        method: "DELETE",
+      }),
+      invalidatesTags: (_result, _error, id) => [
+        { type: "PaymentHistory", id },
+        { type: "PaymentHistory", id: "LIST" },
+      ],
+    }),
   }),
 });
 
@@ -173,4 +205,6 @@ export const {
   useCreateCategoryMutation,
   useUpdateCategoryMutation,
   useDeleteCategoryMutation,
+  useGetPaymentHistoryQuery,
+  useDeletePaymentHistoryMutation,
 } = productApi;

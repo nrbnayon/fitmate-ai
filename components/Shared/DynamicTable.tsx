@@ -287,8 +287,12 @@ export function DynamicTable<T extends Record<string, any>>({
                   placeholder="Search"
                   value={searchQuery}
                   onChange={(e) => {
-                    setSearchQuery(e.target.value);
+                    const query = e.target.value;
+                    setSearchQuery(query);
                     setCurrentPage(1);
+                    if (filter?.onSearchChange) {
+                      filter.onSearchChange(query);
+                    }
                   }}
                   className="block w-full pl-10 pr-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm transition-all"
                 />

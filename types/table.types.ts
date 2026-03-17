@@ -69,6 +69,7 @@ export interface SortConfig {
 export interface FilterConfig {
   enabled?: boolean;
   searchKeys?: string[];
+  onSearchChange?: (query: string) => void;
   customFilters?: Record<string, (value: any) => boolean>;
 }
 
