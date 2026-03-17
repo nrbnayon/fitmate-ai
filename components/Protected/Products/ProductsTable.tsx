@@ -30,7 +30,7 @@ export default function ProductsTable() {
     page_size: pageSize,
   });
 
-  const { data: categoriesData } = useGetProductCategoriesQuery();
+  const { data: categoriesData } = useGetProductCategoriesQuery({});
   const [deleteProduct, { isLoading: isDeleting }] = useDeleteProductMutation();
   
   // Modal State

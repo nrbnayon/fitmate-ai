@@ -198,8 +198,9 @@ export const baseQueryWithReauth: BaseQueryFn<
 
     const refreshData = refreshResult.data as RefreshTokenApiResponse | undefined;
 
-    if (refreshData?.success && refreshData?.data?.access_token) {
-      const { access_token: newToken, refresh_token: newRefreshToken } = refreshData.data;
+    if (refreshData?.success && refreshData?.data) {
+      const newToken = refreshData.data.access_token;
+      const newRefreshToken = refreshData.data.refresh_token;
 
       // Update cookies
       tokenStorage.updateTokens(newToken, newRefreshToken);

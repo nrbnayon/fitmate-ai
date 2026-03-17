@@ -92,7 +92,7 @@ const authSlice = createSlice({
      */
     setCredentials: (
       state,
-      action: PayloadAction<{ access_token: string }>,
+      action: PayloadAction<{ access_token: string; refresh_token?: string }>,
     ) => {
       // Cookie already updated in apiSlice.ts baseQueryWithReauth.
       // Mark as authenticated in case of edge-case where it was false.

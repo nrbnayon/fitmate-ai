@@ -1,8 +1,10 @@
 import { apiSlice } from "../features/apiSlice";
 import type {
+  CategoryMutationPayload,
   ProductCategoriesResponse,
   ProductListResponse,
   ProductMutationPayload,
+  SingleCategoryResponse,
   SingleProductResponse,
 } from "@/types/products";
 import type { ApiResponse } from "@/types/auth.types";
@@ -61,12 +63,56 @@ export const productApi = apiSlice.injectEndpoints({
           : [{ type: "Product" as const, id: "LIST" }],
     }),
 
-    getProductCategories: builder.query<ProductCategoriesResponse, void>({
-      query: () => ({
+    getProductCategories: builder.query<ProductCategoriesResponse, { page?: number; page_size?: number }>({
+      query: ({ page = 1, page_size = 10 } = {}) => ({
         url: "/products/categories/",
         method: "GET",
+        params: { page, page_size },
       }),
-      providesTags: [{ type: "ProductCategory", id: "LIST" }],
+      providesTags: (result) =>
+        result?.data?.results?.categories
+          ? [
+              ...result.data.results.categories.map((cat) => ({
+                type: "ProductCategory" as const,
+                id: cat.id,
+              })),
+              { type: "ProductCategory" as const, id: "LIST" },
+            ]
+          : [{ type: "ProductCategory" as const, id: "LIST" }],
+    }),
+
+    createCategory: builder.mutation<SingleCategoryResponse, CategoryMutationPayload>({
+      query: (payload) => ({
+        url: "/products/categories/",
+        method: "POST",
+        body: payload,
+      }),
+      invalidatesTags: [{ type: "ProductCategory", id: "LIST" }],
+    }),
+
+    updateCategory: builder.mutation<SingleCategoryResponse, { id: number; payload: CategoryMutationPayload }>({
+      query: ({ id, payload }) => ({
+        url: `/products/categories/${id}/`,
+        method: "POST",
+        body: payload,
+      }),
+      invalidatesTags: (_result, _error, { id }) => [
+        { type: "ProductCategory", id },
+        { type: "ProductCategory", id: "LIST" },
+        { type: "Product" as const, id: "LIST" }, // Categories might affect product lists
+      ],
+    }),
+
+    deleteCategory: builder.mutation<ApiResponse<null>, number>({
+      query: (id) => ({
+        url: `/products/categories/${id}/`,
+        method: "DELETE",
+      }),
+      invalidatesTags: (_result, _error, id) => [
+        { type: "ProductCategory", id },
+        { type: "ProductCategory", id: "LIST" },
+        { type: "Product" as const, id: "LIST" },
+      ],
     }),
 
     getProductById: builder.query<SingleProductResponse, number>({
@@ -124,4 +170,7 @@ export const {
   useCreateProductMutation,
   useUpdateProductMutation,
   useDeleteProductMutation,
+  useCreateCategoryMutation,
+  useUpdateCategoryMutation,
+  useDeleteCategoryMutation,
 } = productApi;

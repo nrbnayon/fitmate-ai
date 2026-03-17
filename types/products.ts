@@ -56,6 +56,12 @@ export type ProductCategoriesResponse = ApiResponse<ProductCategoriesData>;
 
 export type SingleProductResponse = ApiResponse<Product>;
 
+export interface CategoryMutationPayload {
+  name: string;
+}
+
+export type SingleCategoryResponse = ApiResponse<ProductCategory>;
+
 export interface ProductMutationPayload {
   name: string;
   brand: string;

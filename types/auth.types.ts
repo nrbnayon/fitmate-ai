@@ -97,6 +97,7 @@ export interface RefreshTokenRequest {
 
 export interface RefreshTokenResponseData {
   access_token: string;
+  refresh_token: string;
 }
 
 export type RefreshTokenApiResponse = ApiResponse<RefreshTokenResponseData>;
