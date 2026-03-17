@@ -7,6 +7,7 @@ export interface Product {
   brand: string;
   shade: string;
   category: string;
+  category_name: string;
   colour_hex: string;
   price: string;
   discount_percentage?: number;

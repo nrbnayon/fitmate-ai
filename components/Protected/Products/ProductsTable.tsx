@@ -48,7 +48,7 @@ export default function ProductsTable() {
     return products.filter(p => 
         p.name.toLowerCase().includes(query) || 
         p.brand.toLowerCase().includes(query) ||
-        p.category.toLowerCase().includes(query)
+        p.category_name.toLowerCase().includes(query)
     );
   }, [products, searchQuery]);
 
@@ -117,8 +117,8 @@ export default function ProductsTable() {
         key: 'category',
         header: 'Category',
         render: (_, row) => (
-            <span className={`px-3 py-1 rounded-full text-xs font-medium ${getCategoryBadgeStyle(row.category)}`}>
-                {row.category}
+            <span className={`px-3 py-1 rounded-full text-xs font-medium ${getCategoryBadgeStyle(row.category_name)}`}>
+                {row.category_name}
             </span>
         )
     }

@@ -222,7 +222,11 @@ export function ProductModal({ isOpen, onClose, product, categories }: ProductMo
                             className={`w-full px-4 py-3 rounded-lg border ${errors.category ? 'border-red-500 ring-2 ring-red-200' : 'border-gray-200 focus:ring-2 focus:ring-primary/20'} outline-none appearance-none bg-white font-nunito`}
                         >
                             <option value="" disabled>Select category</option>
-                            {categories.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
+                            {categories.map(c => (
+                                <option key={c.id} value={c.slug}>
+                                    {c.name}
+                                </option>
+                            ))}
                         </select>
                         <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none w-4 h-4" />
                     </div>
