@@ -10,6 +10,10 @@ import type {
 import type {
   PaymentHistoryResponse,
 } from "@/types/paymentHistory";
+import type {
+  OrderListResponse,
+  SingleOrderResponse,
+} from "@/types/orderManagement";
 import type { ApiResponse } from "@/types/auth.types";
 
 export interface GetProductsParams {
@@ -190,6 +194,43 @@ export const productApi = apiSlice.injectEndpoints({
         { type: "PaymentHistory", id: "LIST" },
       ],
     }),
+
+    getOrders: builder.query<OrderListResponse, { page?: number; page_size?: number }>({
+      query: ({ page = 1, page_size = 10 } = {}) => ({
+        url: "/products/orders/",
+        method: "GET",
+        params: { page, page_size },
+      }),
+      providesTags: (result) =>
+        result?.data?.orders
+          ? [
+              ...result.data.orders.map((order) => ({
+                type: "Order" as const,
+                id: order.id,
+              })),
+              { type: "Order" as const, id: "LIST" },
+            ]
+          : [{ type: "Order" as const, id: "LIST" }],
+    }),
+
+    getOrderById: builder.query<SingleOrderResponse, number>({
+      query: (id) => ({
+        url: `/products/orders/${id}/`,
+        method: "GET",
+      }),
+      providesTags: (_result, _error, id) => [{ type: "Order", id }],
+    }),
+
+    deleteOrder: builder.mutation<ApiResponse<null>, number>({
+      query: (id) => ({
+        url: `/products/orders/${id}/`,
+        method: "DELETE",
+      }),
+      invalidatesTags: (_result, _error, id) => [
+        { type: "Order", id },
+        { type: "Order", id: "LIST" },
+      ],
+    }),
   }),
 });
 
@@ -207,4 +248,7 @@ export const {
   useDeleteCategoryMutation,
   useGetPaymentHistoryQuery,
   useDeletePaymentHistoryMutation,
+  useGetOrdersQuery,
+  useGetOrderByIdQuery,
+  useDeleteOrderMutation,
 } = productApi;

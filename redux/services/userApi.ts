@@ -7,6 +7,7 @@ import {
     CreatorDetailsResponse,
     DeleteUserResponse
 } from "@/types/userManagement.types";
+import { CommissionTrackingResponse } from "@/types/commissionTracking";
 
 export const userApi = apiSlice.injectEndpoints({
     overrideExisting: true,
@@ -67,6 +68,22 @@ export const userApi = apiSlice.injectEndpoints({
                 "Dashboard" // Invalidate dashboard since user count/stats might change
             ],
         }),
+
+        // 6. Get Commission Tracking
+        getCommissionTracking: builder.query<CommissionTrackingResponse, { page?: number, page_size?: number, search?: string }>({
+            query: ({ page = 1, page_size = 10, search } = {}) => ({
+                url: "/profile/commissions/",
+                params: {
+                    page,
+                    page_size,
+                    search: search || undefined
+                }
+            }),
+            providesTags: (result) => 
+                result?.data?.table?.commissions 
+                    ? [{ type: 'Commission' as const, id: 'LIST' }]
+                    : [{ type: 'Commission', id: 'LIST' }],
+        }),
     }),
 });
 
@@ -78,4 +95,5 @@ export const {
     useDeleteUserMutation,
     useLazyGetUserDetailsQuery,
     useLazyGetCreatorDetailsQuery,
+    useGetCommissionTrackingQuery,
 } = userApi;
