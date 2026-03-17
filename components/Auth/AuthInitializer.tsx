@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import {
@@ -18,7 +18,12 @@ import {
 } from "@/redux/services/authApi";
 import type { UserRole } from "@/types/auth.types";
 
-export function AuthInitializer({ children }: { children: React.ReactNode }) {
+/**
+ * AuthInitializerInner contains the logic that uses useSearchParams().
+ * It must be wrapped in <Suspense> to satisfy Next.js build requirements
+ * for statically generated pages (like the 404 page).
+ */
+function AuthInitializerInner({ children }: { children: React.ReactNode }) {
   const dispatch = useAppDispatch();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -64,12 +69,10 @@ export function AuthInitializer({ children }: { children: React.ReactNode }) {
             const currentRole = tokenStorage.getUserRole() as UserRole | null;
             if (currentRole) {
               dispatch(rehydrateAuth({ user_id: "", role: currentRole }));
-              dispatch(
-                setCredentials({ access_token, refresh_token }),
-              );
+              dispatch(setCredentials({ access_token, refresh_token }));
 
               // Redirect back to where the user was trying to go
-              const redirectTo = searchParams?.get("redirect") ?? "/dashboard";
+              const redirectTo = searchParams.get("redirect") ?? "/dashboard";
               router.replace(redirectTo);
             } else {
               // Role cookie missing — can't identify the user, force re-login
@@ -112,4 +115,12 @@ export function AuthInitializer({ children }: { children: React.ReactNode }) {
   }, [isAuthenticated, user?.full_name, fetchProfile, dispatch]);
 
   return <>{children}</>;
+}
+
+export function AuthInitializer({ children }: { children: React.ReactNode }) {
+  return (
+    <Suspense fallback={null}>
+      <AuthInitializerInner>{children}</AuthInitializerInner>
+    </Suspense>
+  );
 }
