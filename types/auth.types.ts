@@ -131,3 +131,13 @@ export interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
 }
+
+// ─── 8. Change Password ───────────────────────────────────────────────────────
+// POST /auth/change-password/
+export interface ChangePasswordRequest {
+  old_password: string;
+  new_password: string;
+  confirm_password: string;
+}
+
+export type ChangePasswordApiResponse = ApiResponse<null>;

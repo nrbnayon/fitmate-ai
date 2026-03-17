@@ -195,11 +195,11 @@ export const productApi = apiSlice.injectEndpoints({
       ],
     }),
 
-    getOrders: builder.query<OrderListResponse, { page?: number; page_size?: number }>({
-      query: ({ page = 1, page_size = 10 } = {}) => ({
+    getOrders: builder.query<OrderListResponse, { page?: number; page_size?: number; search?: string }>({
+      query: ({ page = 1, page_size = 10, search } = {}) => ({
         url: "/products/orders/",
         method: "GET",
-        params: { page, page_size },
+        params: { page, page_size, search },
       }),
       providesTags: (result) =>
         result?.data?.orders

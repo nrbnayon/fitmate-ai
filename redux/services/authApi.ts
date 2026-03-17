@@ -17,15 +17,14 @@ import type {
   RefreshTokenRequest,
   RefreshTokenApiResponse,
   ProfileApiResponse,
+  ChangePasswordRequest,
+  ChangePasswordApiResponse,
 } from "@/types/auth.types";
 
 export const authApi = apiSlice.injectEndpoints({
   overrideExisting: true,
   endpoints: (builder) => ({
     // ── 1. Login ──────────────────────────────────────────────────────────────
-    // POST /auth/login/
-    // Body: { email, password }
-    // Response data: { access_token, access_token_valid_till, refresh_token, role, user_id }
     login: builder.mutation<LoginApiResponse, LoginRequest>({
       query: (body) => ({
         url: "/auth/login/",
@@ -35,9 +34,6 @@ export const authApi = apiSlice.injectEndpoints({
     }),
 
     // ── 2. Forgot Password ────────────────────────────────────────────────────
-    // POST /auth/forgot-password/
-    // Body: { email }
-    // Response data: { user_id, expires_at }
     forgotPassword: builder.mutation<
       ForgotPasswordApiResponse,
       ForgotPasswordRequest
@@ -50,9 +46,6 @@ export const authApi = apiSlice.injectEndpoints({
     }),
 
     // ── 3. Verify Reset Code ──────────────────────────────────────────────────
-    // POST /auth/verify-reset-code/
-    // Body: { user_id, code }   ← field is "code" not "verification_code"
-    // Response data: { secret_key, user_id }
     verifyResetCode: builder.mutation<
       VerifyResetCodeApiResponse,
       VerifyResetCodeRequest
@@ -65,9 +58,6 @@ export const authApi = apiSlice.injectEndpoints({
     }),
 
     // ── 4. Reset Password ─────────────────────────────────────────────────────
-    // POST /auth/reset-password/
-    // Body: { secret_key, user_id, new_password, confirm_password }
-    // Response: message only, no data
     resetPassword: builder.mutation<
       ResetPasswordApiResponse,
       ResetPasswordRequest
@@ -80,9 +70,6 @@ export const authApi = apiSlice.injectEndpoints({
     }),
 
     // ── 5. Resend Verification Code ───────────────────────────────────────────
-    // POST /auth/resend-verification/
-    // Body: { email }   ← field is "email" not "user_id"
-    // Response data: { email, expires_at }
     resendVerificationCode: builder.mutation<
       ResendOtpApiResponse,
       ResendOtpRequest
@@ -95,11 +82,6 @@ export const authApi = apiSlice.injectEndpoints({
     }),
 
     // ── 6. Refresh Token ──────────────────────────────────────────────────────
-    // GET /auth/refresh-token/  — Bearer Token (refresh token) in Authorization header
-    // Body: { refresh }   ← field is "refresh" not "refresh_token"
-    // Response data: { access_token }
-    // NOTE: This is handled automatically by baseQueryWithReauth in apiSlice.ts.
-    //       Exposed here only if you need to call it manually.
     refreshToken: builder.mutation<
       RefreshTokenApiResponse,
       RefreshTokenRequest
@@ -112,8 +94,6 @@ export const authApi = apiSlice.injectEndpoints({
     }),
 
     // ── 7. Get Profile ────────────────────────────────────────────────────────
-    // GET /auth/admin/profile/  — Bearer Token in Authorization header
-    // Response data: { full_name, email, profile_picture, phone_number, address, created_at }
     getProfile: builder.query<ProfileApiResponse, void>({
       query: () => ({
         url: "/auth/admin/profile/",
@@ -122,24 +102,24 @@ export const authApi = apiSlice.injectEndpoints({
       providesTags: ["Profile"],
     }),
 
-    //  // ── 8. Update Profile ────────────────────────────────────────────────────
-    // updateProfile: builder.mutation<ApiResponse<ProfileResponse>, FormData>({
-    //   query: (formData) => ({
-    //     url: "/api/settings/personal-info/me",
-    //     method: "PUT",
-    //     body: formData,
-    //   }),
-    //   invalidatesTags: ["Profile"],
-    // }),
+    // ── 8. Update Profile ────────────────────────────────────────────────────
+    updateProfile: builder.mutation<ProfileApiResponse, FormData>({
+      query: (formData) => ({
+        url: "/auth/admin/profile/",
+        method: "PUT",
+        body: formData,
+      }),
+      invalidatesTags: ["Profile"],
+    }),
 
-    // // ── 9. Change Password ───────────────────────────────────────────────────
-    // changePassword: builder.mutation<ApiResponse<any>, ChangePasswordRequest>({
-    //   query: (data) => ({
-    //     url: "/api/auth/change-password",
-    //     method: "PATCH",
-    //     body: data,
-    //   }),
-    // }),
+    // ── 9. Change Password ───────────────────────────────────────────────────
+    changePassword: builder.mutation<ChangePasswordApiResponse, ChangePasswordRequest>({
+      query: (body) => ({
+        url: "/auth/change-password/",
+        method: "POST",
+        body,
+      }),
+    }),
   }),
 });
 
@@ -152,4 +132,6 @@ export const {
   useRefreshTokenMutation,
   useGetProfileQuery,
   useLazyGetProfileQuery,
+  useUpdateProfileMutation,
+  useChangePasswordMutation,
 } = authApi;
