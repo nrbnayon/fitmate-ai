@@ -7,7 +7,7 @@ import * as z from "zod";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 
 import { Button } from "@/components/ui/button";
@@ -27,6 +27,7 @@ type FormValues = z.infer<typeof loginValidationSchema>;
 export const SignInForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
   const dispatch = useAppDispatch();
   const [login, { isLoading }] = useLoginMutation();
 
@@ -61,13 +62,17 @@ export const SignInForm = () => {
       if (response.success && response.data) {
         dispatch(loginSuccess(response.data));
         toast.success(response.message || "Logged in successfully!");
-        router.push("/");
+        // Honour the ?redirect= param set by the middleware, fall back to "/"
+        const redirectTo = searchParams.get("redirect") ?? "/";
+        router.replace(redirectTo);
       } else {
         toast.error(response.message || "Login failed.");
       }
     } catch (error: unknown) {
       console.error("Login error:", error);
-      const errorMessage = (error as any)?.data?.message || "Login failed. Please check your credentials.";
+      const errorMessage =
+        (error as { data?: { message?: string } })?.data?.message ??
+        "Login failed. Please check your credentials.";
       toast.error(errorMessage);
     }
   };

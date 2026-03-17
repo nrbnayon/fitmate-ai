@@ -1,6 +1,10 @@
 // redux/features/authSlice.ts
 // Global auth state — single source of truth for the entire app.
 // On page refresh, rehydrates from cookies so the user stays logged in.
+//
+// IMPORTANT: loginSuccess is ONLY called on actual login (sets cookies).
+// rehydrateAuth is called on page-refresh to restore Redux state from cookies
+// WITHOUT touching cookie expiry values.
 
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { tokenStorage } from "../features/apiSlice";
@@ -23,10 +27,12 @@ function buildInitialState(): AuthState {
   }
 
   const accessToken = tokenStorage.getAccessToken();
-  const refreshToken = tokenStorage.getRefreshToken();
   const role = tokenStorage.getUserRole() as UserRole | null;
 
-  if ((accessToken || refreshToken) && role) {
+  // Only mark as authenticated if we have BOTH an access token AND a role.
+  // A refresh-token-only state means the access token expired — AuthInitializer
+  // will handle silent re-authentication via the refresh endpoint.
+  if (accessToken && role) {
     return {
       user: {
         user_id: "", // will be enriched when getProfile is called
@@ -46,8 +52,10 @@ const authSlice = createSlice({
   initialState: buildInitialState,
   reducers: {
     /**
-     * loginSuccess — called right after POST /auth/login/ succeeds.
-     * Stores all tokens in cookies + populates Redux state.
+     * loginSuccess — called ONLY after POST /auth/login/ succeeds.
+     * Writes all tokens + role into cookies with correct expiry,
+     * then populates Redux state.
+     * DO NOT call this during rehydration — use rehydrateAuth instead.
      */
     loginSuccess: (state, action: PayloadAction<LoginResponseData>) => {
       const {
@@ -67,6 +75,20 @@ const authSlice = createSlice({
       );
 
       state.user = { user_id, role };
+      state.isAuthenticated = true;
+      state.isLoading = false;
+    },
+
+    /**
+     * rehydrateAuth — called on page-refresh / app boot when cookies already
+     * exist. Restores Redux state WITHOUT touching cookie expiry values.
+     * This is the safe replacement for calling loginSuccess during rehydration.
+     */
+    rehydrateAuth: (
+      state,
+      action: PayloadAction<{ user_id: string; role: UserRole }>,
+    ) => {
+      state.user = { user_id: action.payload.user_id, role: action.payload.role };
       state.isAuthenticated = true;
       state.isLoading = false;
     },
@@ -116,8 +138,14 @@ const authSlice = createSlice({
   },
 });
 
-export const { loginSuccess, setProfile, setCredentials, logout, setLoading } =
-  authSlice.actions;
+export const {
+  loginSuccess,
+  rehydrateAuth,
+  setProfile,
+  setCredentials,
+  logout,
+  setLoading,
+} = authSlice.actions;
 
 export default authSlice.reducer;
 

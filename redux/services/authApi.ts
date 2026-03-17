@@ -88,7 +88,7 @@ export const authApi = apiSlice.injectEndpoints({
     >({
       query: (body) => ({
         url: "/auth/refresh-token/",
-        method: "GET",
+        method: "POST",
         body,
       }),
     }),

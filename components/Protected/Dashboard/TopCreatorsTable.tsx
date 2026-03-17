@@ -70,7 +70,7 @@ export function TopCreatorsTable({ creators }: TopCreatorsTableProps) {
         icon: (
           <Trash2 className="w-5 h-5 text-red-400 hover:text-red-500 transition-colors cursor-pointer" />
         ),
-        onClick: (row: TopCreator) => console.log("Delete", row.id),
+        onClick: (row: TopCreator) => console.log("Delete ::", row.id),
       },
     ],
     [],

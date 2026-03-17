@@ -25,7 +25,7 @@ export default function FloatingInputDemo() {
     setErrors(newErrors);
     
     if (!newErrors.email && !newErrors.password) {
-      console.log("Form submitted:", { email, password });
+      // console.log("Form submitted:", { email, password });
     }
   };
 

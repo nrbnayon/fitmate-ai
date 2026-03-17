@@ -126,7 +126,16 @@ export async function proxy(request: NextRequest) {
   const accessToken = request.cookies.get("accessToken")?.value;
   const refreshToken = request.cookies.get("refreshToken")?.value;
   const userRole = request.cookies.get("userRole")?.value ?? "";
-  const isAuthenticated = !!accessToken || !!refreshToken;
+
+  // isAuthenticated requires a valid accessToken cookie.
+  // Having only a refreshToken means the access token expired — the
+  // client-side baseQueryWithReauth will handle obtaining a new one,
+  // but only AFTER it makes a failing request. At the middleware level we
+  // can't proactively refresh, so we let the client through only when
+  // we have an accessToken. If only a refreshToken exists, treat as
+  // "needs refresh" — redirect to /signin so the page can bootstrap freshly.
+  const isAuthenticated = !!accessToken;
+  const hasRefreshTokenOnly = !accessToken && !!refreshToken;
   const isAdmin = isAuthenticated && userRole === ROLES.ADMIN;
 
   // ============================================
@@ -177,8 +186,28 @@ export async function proxy(request: NextRequest) {
   // STEP 6: Everything else is PROTECTED — deny-by-default
   // ============================================
 
-  // 6a. Not authenticated → redirect to /signin with return path
-  if (!isAuthenticated) {
+  // 6a. Not authenticated at all → redirect to /signin with return path
+  if (!isAuthenticated && !hasRefreshTokenOnly) {
+    const loginUrl = new URL("/signin", request.url);
+    loginUrl.searchParams.set("redirect", pathname);
+    return NextResponse.redirect(loginUrl);
+  }
+
+  // 6b. Has refresh token but no access token — access token has expired.
+  // The middleware cannot call the refresh API (no fetch in edge runtime).
+  // Let the request through only for universal protected routes where the
+  // client-side reauth logic will fire on the first 401, then redirect.
+  // For all other protected routes, redirect to /signin — the AuthInitializer
+  // will detect cookies and silently rehydrate after client-side refresh.
+  if (hasRefreshTokenOnly) {
+    // Allow universal routes (profile, settings, notifications) through
+    // so client-side reauth can silently refresh without losing the page.
+    if (matchesRoute(pathname, UNIVERSAL_PROTECTED_ROUTES)) {
+      return withSecurityHeaders(NextResponse.next());
+    }
+    // For all other protected routes, bounce to signin.
+    // The signin page & AuthInitializer will detect the refresh token,
+    // rehydrate, and redirect back to the intended destination.
     const loginUrl = new URL("/signin", request.url);
     loginUrl.searchParams.set("redirect", pathname);
     return NextResponse.redirect(loginUrl);

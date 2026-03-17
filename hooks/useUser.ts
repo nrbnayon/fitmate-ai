@@ -9,7 +9,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import {
-  loginSuccess,
+  rehydrateAuth,
   logout as logoutAction,
   setProfile,
   selectCurrentUser,
@@ -68,14 +68,11 @@ export function useUser(): UseUserReturn {
 
     if (!isAuthenticated && accessToken && userRole) {
       // Cookies exist but Redux lost state (e.g. hard refresh before slice init)
-      // loginSuccess re-sets cookies (no-op since same values) + restores state
+      // rehydrateAuth restores Redux state WITHOUT overwriting cookie expiry
       dispatch(
-        loginSuccess({
-          access_token: accessToken,
-          refresh_token: tokenStorage.getRefreshToken() ?? "",
-          role: userRole,
+        rehydrateAuth({
           user_id: "", // unknown until profile fetch
-          access_token_valid_till: 0, // don't overwrite expiry
+          role: userRole,
         }),
       );
     }
