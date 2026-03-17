@@ -50,7 +50,7 @@ export function UserDetailsModal({ userId, userRole, isOpen, onClose }: UserDeta
         {/* Close Button Mobile */}
          <button
           onClick={onClose}
-          className="absolute right-4 top-4 z-10 md:hidden p-2 bg-white/80 rounded-full hover:bg-gray-100 transition-colors"
+          className="absolute right-2 top-2 z-10 md:hidden p-2 bg-white/80 rounded-full hover:bg-gray-100 transition-colors"
         >
           <X size={24} className="text-gray-500" />
         </button>

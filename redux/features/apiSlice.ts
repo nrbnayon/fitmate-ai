@@ -19,8 +19,6 @@ import type { RefreshTokenApiResponse } from "@/types/auth.types";
 // Tokens are stored in cookies so Next.js middleware (proxy.ts) can read them
 // server-side for route protection.
 
-const IS_PROD = process.env.NODE_ENV === "production";
-
 export const getCookie = (name: string): string | null => {
   if (typeof document === "undefined") return null;
   const match = document.cookie
@@ -29,29 +27,10 @@ export const getCookie = (name: string): string | null => {
   return match ? decodeURIComponent(match.split("=")[1]) : null;
 };
 
-export const setCookie = (
-  name: string,
-  value: string,
-  expiresAt?: number, // Unix ms or seconds timestamp
-): void => {
+export const setCookie = (name: string, value: string): void => {
   if (typeof document === "undefined") return;
 
-  // 1. Normalize timestamp (Auto-convert seconds to milliseconds)
-  // Unix timestamp in seconds for 2026 is ~1.7B, in ms it is ~1.7T
-  // If < 10B, it's definitely seconds.
-  let normalizedExpiry = expiresAt;
-  if (normalizedExpiry && normalizedExpiry < 10000000000) {
-    normalizedExpiry *= 1000;
-  }
-
-  const encoded = encodeURIComponent(value);
-  const secure = IS_PROD ? "; Secure" : "";
-  const sameSite = "; SameSite=Strict";
-  const path = "; path=/";
-  const expiry = normalizedExpiry
-    ? `; expires=${new Date(normalizedExpiry).toUTCString()}`
-    : "";
-  document.cookie = `${name}=${encoded}${expiry}${path}${sameSite}${secure}`;
+  document.cookie = `${name}=${encodeURIComponent(value)}; path=/; SameSite=None; Secure`;
 };
 
 export const deleteCookie = (name: string): void => {
@@ -71,36 +50,21 @@ export const tokenStorage = {
     refreshToken: string,
     role: string,
     // refreshExpiresAt: number, // if server provides expiry time
-    accessTokenValidTill: number,
   ) => {
-    const refreshExpiry = Date.now() + 7 * 24 * 60 * 60 * 1000; // 7 days
-    setCookie("accessToken", accessToken, accessTokenValidTill);
-    setCookie("refreshToken", refreshToken, refreshExpiry);
-    // setCookie("accessToken", accessToken, Date.now() + 60 * 60 * 1000); // 1hr
-    // setCookie("refreshToken", refreshToken, refreshExpiresAt); // server-controlled
-    // setCookie(
-    //   "userRole",
-    //   role ?? getCookie("userRole") ?? "",
-    //   refreshExpiresAt,
-    // );
-    // userRole cookie uses same expiry as refresh token
-    setCookie("userRole", role, refreshExpiry);
+    setCookie("accessToken", accessToken);
+    setCookie("refreshToken", refreshToken);
+    setCookie("userRole", role);
   },
 
   // Called on refresh — updates the access token, and optionally the refresh token
   updateTokens: (accessToken: string, refreshToken?: string) => {
-    const oneHour = Date.now() + 60 * 60 * 1000;
-    const sevenDays = Date.now() + 7 * 24 * 60 * 60 * 1000;
-
-    setCookie("accessToken", accessToken, oneHour);
+    setCookie("accessToken", accessToken);
     if (refreshToken) {
-      setCookie("refreshToken", refreshToken, sevenDays);
+      setCookie("refreshToken", refreshToken);
     }
-
-    // Keep userRole valid as long as the refresh token (7 days)
     const currentRole = getCookie("userRole");
     if (currentRole) {
-      setCookie("userRole", currentRole, sevenDays);
+      setCookie("userRole", currentRole);
     }
   },
 
@@ -166,7 +130,7 @@ export const baseQueryWithReauth: BaseQueryFn<
 
   if (!refreshToken) {
     // No refresh token — hard logout
-    tokenStorage.clearAll();
+    // tokenStorage.clearAll();
     const { logout } = await import("../features/authSlice");
     api.dispatch(logout());
     return result;
@@ -196,7 +160,9 @@ export const baseQueryWithReauth: BaseQueryFn<
       extraOptions,
     );
 
-    const refreshData = refreshResult.data as RefreshTokenApiResponse | undefined;
+    const refreshData = refreshResult.data as
+      | RefreshTokenApiResponse
+      | undefined;
 
     if (refreshData?.success && refreshData?.data) {
       const newToken = refreshData.data.access_token;
@@ -207,27 +173,29 @@ export const baseQueryWithReauth: BaseQueryFn<
 
       // Update Redux state
       const { setCredentials } = await import("../features/authSlice");
-      api.dispatch(setCredentials({ 
-        access_token: newToken,
-        refresh_token: newRefreshToken 
-      }));
+      api.dispatch(
+        setCredentials({
+          access_token: newToken,
+          refresh_token: newRefreshToken,
+        }),
+      );
 
       // Notify all waiting requests
       onTokenRefreshed(newToken);
-      
+
       // Retry original request
       result = await rawBaseQuery(args, api, extraOptions);
     } else {
       // Refresh failed — hard logout
       onTokenRefreshed(""); // Clear waiters with empty token to trigger fallback
-      tokenStorage.clearAll();
+      // tokenStorage.clearAll();
       const { logout } = await import("../features/authSlice");
       api.dispatch(logout());
     }
   } catch (err) {
     console.error("Token refresh fatal error:", err);
     onTokenRefreshed("");
-    tokenStorage.clearAll();
+    // tokenStorage.clearAll();
     const { logout } = await import("../features/authSlice");
     api.dispatch(logout());
   } finally {
@@ -242,6 +210,17 @@ export const baseQueryWithReauth: BaseQueryFn<
 export const apiSlice = createApi({
   reducerPath: "api",
   baseQuery: baseQueryWithReauth,
-  tagTypes: ["Profile", "Dashboard", "User", "Auth", "Product", "ProductCategory", "PaymentHistory", "Order", "Commission", "Policy"],
+  tagTypes: [
+    "Profile",
+    "Dashboard",
+    "User",
+    "Auth",
+    "Product",
+    "ProductCategory",
+    "PaymentHistory",
+    "Order",
+    "Commission",
+    "Policy",
+  ],
   endpoints: () => ({}),
 });

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // components/Sidebar.tsx
 "use client";
 
@@ -13,7 +14,6 @@ import {
   PanelRightOpen,
   ChevronDown,
   ChevronUp,
-  Bell,
   CreditCard,
   ScrollText,
   ShieldCheck,
@@ -310,7 +310,11 @@ export default function DashboardWrapper({ children }: DashboardWrapperProps) {
       if (typeof Icon === "object" && !React.isValidElement(Icon)) {
         return (
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          <HugeiconsIcon icon={Icon as any} strokeWidth={2} className={iconClasses} />
+          <HugeiconsIcon
+            icon={Icon as any}
+            strokeWidth={2}
+            className={iconClasses}
+          />
         );
       }
 
@@ -346,7 +350,7 @@ export default function DashboardWrapper({ children }: DashboardWrapperProps) {
   // If not authenticated, render children without sidebar
   if (!isAuthenticated) {
     return (
-      <div className="w-full min-h-screen bg-gray">
+      <div className="w-full min-h-screen bg-gray" suppressHydrationWarning>
         <div className="p-0 flex flex-col gap-2 flex-1 w-full">{children}</div>
       </div>
     );
@@ -358,6 +362,7 @@ export default function DashboardWrapper({ children }: DashboardWrapperProps) {
         "rounded-md flex flex-col md:flex-row bg-gray w-full flex-1 mx-auto",
         "min-h-screen md:h-screen md:overflow-hidden relative",
       )}
+      suppressHydrationWarning
     >
       <div className="relative overflow-visible flex">
         <Sidebar

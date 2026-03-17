@@ -76,18 +76,18 @@ function AuthInitializerInner({ children }: { children: React.ReactNode }) {
               router.replace(redirectTo);
             } else {
               // Role cookie missing — can't identify the user, force re-login
-              tokenStorage.clearAll();
+              // tokenStorage.clearAll();
               dispatch(logout());
             }
           } else {
             // Refresh failed (refresh token itself expired) — hard logout
-            tokenStorage.clearAll();
+            // tokenStorage.clearAll();
             dispatch(logout());
           }
         })
         .catch(() => {
           // Network failure or server error — hard logout
-          tokenStorage.clearAll();
+          // tokenStorage.clearAll();
           dispatch(logout());
         });
     }
