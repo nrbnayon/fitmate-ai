@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import { StatsCard } from "@/components/Shared/StatsCard";
 
 export default function PaymentApprovalClient() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -157,7 +158,7 @@ export default function PaymentApprovalClient() {
         variant: "danger",
         show: (row) => row.status === "pending",
         requiresConfirmation: true,
-        confirmationConfig: (row) => ({
+        confirmationConfig: () => ({
           title: "Reject Withdrawal Request",
           description: `Are you sure you want to reject this withdrawal? The funds will remain in the creator's balance.`,
           confirmText: "Yes, Reject",
@@ -190,33 +191,37 @@ export default function PaymentApprovalClient() {
           ))
         ) : (
           <>
-            <StatCard 
+            <StatsCard 
               title="Pending Amount" 
               value={`$${summaryData?.total_pending_amount?.toFixed(2) || "0.00"}`}
               subtitle={`${summaryData?.total_pending || 0} requests pending`}
-              icon={<Clock className="w-6 h-6 text-orange-500" />}
-              iconBg="bg-orange-50 border-orange-100"
+              icon={Clock}
+              iconColor="#f97316"
+              iconBgColor="#fff7ed"
             />
-            <StatCard 
+            <StatsCard 
               title="Completed Amount" 
               value={`$${summaryData?.total_completed_amount?.toFixed(2) || "0.00"}`}
               subtitle={`${summaryData?.total_completed || 0} requests completed`}
-              icon={<CheckCircle2 className="w-6 h-6 text-emerald-500" />}
-              iconBg="bg-emerald-50 border-emerald-100"
+              icon={CheckCircle2}
+              iconColor="#10b981"
+              iconBgColor="#ecfdf5"
             />
-            <StatCard 
+            <StatsCard 
               title="Total Withdrawals" 
               value={summaryData?.total_withdrawals?.toString() || "0"}
               subtitle="All time requests"
-              icon={<DollarSign className="w-6 h-6 text-blue-500" />}
-              iconBg="bg-blue-50 border-blue-100"
+              icon={DollarSign}
+              iconColor="#3b82f6"
+              iconBgColor="#eff6ff"
             />
-            <StatCard 
+            <StatsCard 
               title="Processing" 
               value={summaryData?.total_processing?.toString() || "0"}
               subtitle="Currently processing"
-              icon={<AlertCircle className="w-6 h-6 text-indigo-500" />}
-              iconBg="bg-indigo-50 border-indigo-100"
+              icon={AlertCircle}
+              iconColor="#6366f1"
+              iconBgColor="#eef2ff"
             />
           </>
         )}
@@ -246,30 +251,3 @@ export default function PaymentApprovalClient() {
   );
 }
 
-// ----------------------------------------------------------------------
-
-interface StatCardProps {
-  title: string;
-  value: string;
-  subtitle: string;
-  icon: React.ReactNode;
-  iconBg: string;
-}
-
-function StatCard({ title, value, subtitle, icon, iconBg }: StatCardProps) {
-  return (
-    <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100 flex flex-col gap-4 relative overflow-hidden group hover:shadow-md transition-shadow">
-      <div className="absolute -right-6 -top-6 w-24 h-24 bg-gradient-to-br from-slate-50 to-transparent rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
-      <div className="flex justify-between items-start z-10">
-        <div className="flex flex-col gap-1.5">
-          <p className="text-[13px] font-bold text-slate-500 uppercase tracking-wider">{title}</p>
-          <h3 className="text-3xl font-extrabold text-slate-900 tracking-tight">{value}</h3>
-          <p className="text-sm font-medium text-slate-400 mt-1">{subtitle}</p>
-        </div>
-        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 border ${iconBg}`}>
-          {icon}
-        </div>
-      </div>
-    </div>
-  );
-}
