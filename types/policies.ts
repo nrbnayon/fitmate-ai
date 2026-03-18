@@ -9,7 +9,11 @@ export interface PolicyListResponse {
   success: boolean;
   status: number;
   message: string;
-  data: Policy[];
+  data: {
+    results: Policy[];
+    total?: number;
+    total_pages?: number;
+  } | Policy[];
 }
 
 export interface SinglePolicyResponse {

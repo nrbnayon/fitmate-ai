@@ -30,12 +30,12 @@ export const getCookie = (name: string): string | null => {
 export const setCookie = (name: string, value: string): void => {
   if (typeof document === "undefined") return;
 
-  document.cookie = `${name}=${encodeURIComponent(value)}; path=/; SameSite=None; Secure`;
+  document.cookie = `${name}=${encodeURIComponent(value)}; path=/;`;
 };
 
 export const deleteCookie = (name: string): void => {
   if (typeof document === "undefined") return;
-  document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Strict`;
+  document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
 };
 
 // ─── Token storage interface ──────────────────────────────────────────────────
@@ -221,6 +221,7 @@ export const apiSlice = createApi({
     "Order",
     "Commission",
     "Policy",
+    "Withdrawal",
   ],
   endpoints: () => ({}),
 });

@@ -24,7 +24,7 @@ export interface TableAction<T = Record<string, unknown>> {
   disabled?: (row: T) => boolean;
   tooltip?: string;
   requiresConfirmation?: boolean;
-  confirmationConfig?: ConfirmationConfig;
+  confirmationConfig?: ConfirmationConfig | ((row: T) => ConfirmationConfig);
 }
 
 // Confirmation modal configuration

@@ -217,9 +217,14 @@ export function DynamicTable<T extends Record<string, any>>({
     if (action.disabled?.(row)) return;
 
     if (action.requiresConfirmation) {
+      const modalConfig = 
+        typeof action.confirmationConfig === 'function' 
+          ? action.confirmationConfig(row) 
+          : action.confirmationConfig;
+
       setConfirmationModal({
         isOpen: true,
-        config: action.confirmationConfig || {
+        config: modalConfig || {
           title: "Confirm Action",
           description: "Are you sure you want to proceed?",
           type: "warning",

@@ -14,12 +14,13 @@ import {
   PanelRightOpen,
   ChevronDown,
   ChevronUp,
-  CreditCard,
   ScrollText,
   ShieldCheck,
 } from "lucide-react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
+  Bitcoin03Icon,
+  BriefcaseDollarIcon,
   DashboardSquare02Icon,
   Dollar01Icon,
   PackageAdd01Icon,
@@ -40,7 +41,7 @@ interface SubLink {
 interface LinkType {
   label: string;
   href: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   icon: any;
   subLinks?: SubLink[];
   roles?: string[];
@@ -99,9 +100,15 @@ export default function DashboardWrapper({ children }: DashboardWrapperProps) {
         roles: ["admin"],
       },
       {
+        label: "Payment Approval",
+        href: "/payment-approval",
+        icon: Bitcoin03Icon,
+        roles: ["admin"],
+      },
+      {
         label: "Payment History",
         href: "/payment-history",
-        icon: <CreditCard />,
+        icon: BriefcaseDollarIcon,
         roles: ["admin"],
       },
       {
@@ -309,7 +316,7 @@ export default function DashboardWrapper({ children }: DashboardWrapperProps) {
       // DashboardSquare02Icon is an object usually.
       if (typeof Icon === "object" && !React.isValidElement(Icon)) {
         return (
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+           
           <HugeiconsIcon
             icon={Icon as any}
             strokeWidth={2}

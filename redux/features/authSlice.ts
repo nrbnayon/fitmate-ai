@@ -63,7 +63,7 @@ const authSlice = createSlice({
         refresh_token,
         role,
         user_id,
-        access_token_valid_till,
+        // access_token_valid_till,  
       } = action.payload;
 
       // Persist to cookies (proxy.ts reads these for route protection)
@@ -71,7 +71,7 @@ const authSlice = createSlice({
         access_token,
         refresh_token,
         role,
-        access_token_valid_till,
+        // access_token_valid_till,
       );
 
       state.user = { user_id, role };

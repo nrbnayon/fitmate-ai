@@ -56,6 +56,7 @@ const ROLE_ROUTES: Record<Role, string[]> = {
     "/commission-tracking",
     "/order-management",
     "/payment-history",
+    "/payment-approval",
     "/products",
     "/user-management",
   ],

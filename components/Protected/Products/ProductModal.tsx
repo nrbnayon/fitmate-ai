@@ -153,7 +153,7 @@ export function ProductModal({ isOpen, onClose, product, categories }: ProductMo
                 
                 {imagePreview ? (
                     <div className={`relative w-full md:w-64 h-40 rounded-lg overflow-hidden border ${errors.image ? 'border-red-500' : 'border-gray-200'} group`}>
-                        <Image src={imagePreview} alt="Cover" fill className="object-cover" />
+                        <Image src={imagePreview || ""} alt="Cover" fill className="object-cover" />
                         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                              <button
                                 type="button"

@@ -15,6 +15,11 @@ import type {
   SingleOrderResponse,
 } from "@/types/orderManagement";
 import type { ApiResponse } from "@/types/auth.types";
+import type { 
+  WithdrawalsResponse, 
+  WithdrawalActionResponse,
+  WithdrawalActionPayload
+} from "@/types/paymentApproval.types";
 
 export interface GetProductsParams {
   category?: string;
@@ -231,6 +236,35 @@ export const productApi = apiSlice.injectEndpoints({
         { type: "Order", id: "LIST" },
       ],
     }),
+
+    getWithdrawals: builder.query<WithdrawalsResponse, { page?: number; page_size?: number; search?: string }>({
+      query: ({ page = 1, page_size = 10, search } = {}) => ({
+        url: "/products/admin/withdrawals/",
+        method: "GET",
+        params: { page, page_size, search },
+      }),
+      providesTags: (result) =>
+            result?.data?.pending_withdrawals
+          ? [
+              ...result.data.pending_withdrawals.map((withdrawal: { id: number }) => ({
+                type: "Withdrawal" as const,
+                id: withdrawal.id,
+              })),
+              { type: "Withdrawal" as const, id: "LIST" },
+            ]
+          : [{ type: "Withdrawal" as const, id: "LIST" }],
+    }),
+
+    actionWithdrawal: builder.mutation<WithdrawalActionResponse, WithdrawalActionPayload>({
+      query: (payload) => ({
+        url: `/products/admin/withdrawals/action/`,
+        method: "POST",
+        body: payload,
+      }),
+      invalidatesTags: [
+        { type: "Withdrawal", id: "LIST" },
+      ],
+    }),
   }),
 });
 
@@ -251,4 +285,6 @@ export const {
   useGetOrdersQuery,
   useGetOrderByIdQuery,
   useDeleteOrderMutation,
+  useGetWithdrawalsQuery,
+  useActionWithdrawalMutation,
 } = productApi;

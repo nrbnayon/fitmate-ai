@@ -8,17 +8,18 @@ import { Input } from "@/components/ui/input";
 import { Eye, EyeOff, Pencil, Camera } from "lucide-react";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
-import { 
-  useGetProfileQuery, 
-  useUpdateProfileMutation, 
-  useChangePasswordMutation 
+import {
+  useGetProfileQuery,
+  useUpdateProfileMutation,
+  useChangePasswordMutation,
 } from "@/redux/services/authApi";
 
 export default function ProfileClient() {
-  const { data: profileRes, isLoading: isProfileLoading } = useGetProfileQuery();
+  const { data: profileRes, isLoading: isProfileLoading } =
+    useGetProfileQuery();
   const [updateProfile] = useUpdateProfileMutation();
   const [changePassword] = useChangePasswordMutation();
-  
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [isSaving, setIsSaving] = useState(false);
@@ -114,7 +115,7 @@ export default function ProfileClient() {
       const res = await changePassword({
         old_password: passwordData.current,
         new_password: passwordData.new,
-        confirm_password: passwordData.confirm
+        confirm_password: passwordData.confirm,
       }).unwrap();
 
       if (res.success) {
@@ -169,7 +170,7 @@ export default function ProfileClient() {
       setEditAddressValue(data.address || "");
       setPreviewUrl(data.profile_picture);
     }
-    
+
     setIsEditingName(false);
     setIsEditingPhone(false);
     setIsEditingAddress(false);
@@ -244,7 +245,12 @@ export default function ProfileClient() {
           <div className="relative group">
             <div className="relative w-18 h-18 rounded-full overflow-hidden shrink-0 bg-gray-200 border-2 border-primary/20">
               <Image
-                src={previewUrl || "/images/avatar.png"}
+                src={
+                  previewUrl ||
+                  `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                    profileRes?.data?.full_name || "Admin"
+                  )}&background=random&size=72`
+                }
                 alt="Profile"
                 width={72}
                 height={72}
@@ -257,7 +263,7 @@ export default function ProfileClient() {
                 }}
               />
             </div>
-            <button 
+            <button
               onClick={() => fileInputRef.current?.click()}
               className="absolute bottom-0 right-0 p-1.5 bg-primary text-white rounded-full border-2 border-white hover:bg-primary/90 transition-all shadow-sm"
               aria-label="Change profile picture"
@@ -280,10 +286,11 @@ export default function ProfileClient() {
           <div className="w-full md:w-48 shrink-0 space-y-3">
             <button
               onClick={() => setActiveSection("account")}
-              className={`w-full text-left px-4 py-3 rounded-lg font-semibold transition-all ${activeSection === "account"
-                ? "bg-green-50 text-primary border-l-4 border-primary"
-                : "text-secondary hover:bg-blue-50"
-                }`}
+              className={`w-full text-left px-4 py-3 rounded-lg font-semibold transition-all ${
+                activeSection === "account"
+                  ? "bg-green-50 text-primary border-l-4 border-primary"
+                  : "text-secondary hover:bg-blue-50"
+              }`}
             >
               Account Settings
             </button>
@@ -305,7 +312,8 @@ export default function ProfileClient() {
                       {isEditingName ? (
                         <div className="mt-3 max-w-full bg-blue-50 text-foreground p-6 rounded-lg">
                           <p className="text-sm text-secondary mb-3">
-                            Make sure this matches the name on your any Govt. ID.
+                            Make sure this matches the name on your any Govt.
+                            ID.
                           </p>
 
                           <div className="space-y-2">
@@ -487,7 +495,10 @@ export default function ProfileClient() {
                       <div className="text-foreground">
                         {showEmail
                           ? profileRes?.data?.email
-                          : profileRes?.data?.email?.replace(/(.{3})(.*)(@.*)/, "$1***$3")}
+                          : profileRes?.data?.email?.replace(
+                              /(.{3})(.*)(@.*)/,
+                              "$1***$3",
+                            )}
                       </div>
                     </div>
                     <button

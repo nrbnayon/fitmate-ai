@@ -96,11 +96,14 @@ export const userApi = apiSlice.injectEndpoints({
         // 7. Get Policies
         getPolicies: builder.query<PolicyListResponse, void>({
             query: () => "/profile/policies/",
-            providesTags: (result) =>
-                result?.data && Array.isArray(result.data) ? [
-                    ...result.data.map(({ id }) => ({ type: 'Policy' as const, id })),
+            providesTags: (result) => {
+                const data = result?.data;
+                const policies = Array.isArray(data) ? data : data?.results || [];
+                return [
+                    ...policies.map(({ id }) => ({ type: 'Policy' as const, id })),
                     { type: 'Policy', id: 'LIST' }
-                ] : [{ type: 'Policy', id: 'LIST' }],
+                ];
+            },
         }),
 
         // 8. Create Policy
