@@ -35,6 +35,7 @@ export interface Withdrawal {
     email: string;
     profile_picture?: string;
   };
+  requested_at?: string; //"2026-03-18T06:43:16.170287Z"
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any; 
 }

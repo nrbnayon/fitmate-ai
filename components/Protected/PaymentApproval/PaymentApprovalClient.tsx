@@ -21,6 +21,21 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { StatsCard } from "@/components/Shared/StatsCard";
 
+const formatRequestedDateTime = (dateString?: string) => {
+  if (!dateString) return "N/A";
+
+  const parsedDate = new Date(dateString);
+  if (Number.isNaN(parsedDate.getTime())) return "N/A";
+
+  return parsedDate.toLocaleString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+
 export default function PaymentApprovalClient() {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -120,10 +135,14 @@ export default function PaymentApprovalClient() {
         ),
       },
       {
-        key: "created_at",
+        key: "requested_at",
         header: "Requested Date",
         sortable: true,
-        render: (value) => <span className="text-gray-600 whitespace-nowrap">{value ? new Date(value).toLocaleDateString() : "N/A"}</span>,
+        render: (_, row) => (
+          <span className="text-gray-600 whitespace-nowrap">
+            {formatRequestedDateTime(row.requested_at || row.created_at)}
+          </span>
+        ),
       },
     ],
     showActions: true,
