@@ -54,19 +54,19 @@ export default function CommissionTrackingTable({
         sortable: true,
         render: (value) => `$${value}`,
       },
-      {
-        key: "progress",
-        header: "Progress",
-        sortable: true,
-        render: (value: PayoutStatus) => (
-          <span className={cn(
-            "capitalize",
-            statusStyles[value]
-          )}>
-            {value}
-          </span>
-        ),
-      },
+      // {
+      //   key: "progress",
+      //   header: "Progress",
+      //   sortable: true,
+      //   render: (value: PayoutStatus) => (
+      //     <span className={cn(
+      //       "capitalize",
+      //       statusStyles[value]
+      //     )}>
+      //       {value}
+      //     </span>
+      //   ),
+      // },
     ],
     showActions: false,
   };
