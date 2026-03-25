@@ -19,7 +19,6 @@ export function StatsCard({
   icon: Icon,
   iconColor,
   iconBgColor,
-  isUp,
   subtitle,
   className,
 }: StatsCardProps) {
@@ -37,7 +36,7 @@ export function StatsCard({
     >
       <div className="flex flex-col justify-center gap-2">
         <h3 className="text-foreground text-sm font-semibold">{title}</h3>
-        <div className="text-3xl font-bold text-foreground">{value}</div>
+        <div className="text-xl md:text-2xl font-bold text-foreground">{value}</div>
         {subtitle && (
           <div className="flex items-center gap-1 text-xs">
             {percentage && (
@@ -52,7 +51,7 @@ export function StatsCard({
       </div>
 
       <div
-        className="flex items-center justify-center rounded-lg p-3 min-w-[56px] min-h-[56px] mt-1"
+        className="flex items-center justify-center rounded-lg p-3 min-w-14 min-h-14 mt-1"
         style={{ backgroundColor: iconBgColor }}
       >
         <Icon

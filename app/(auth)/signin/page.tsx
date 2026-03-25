@@ -1,9 +1,10 @@
 import { SignInForm } from "@/components/Auth/SignInForm";
+import { Suspense } from "react";
 
 export default function SignInPage() {
   return (
-    <div>
+    <Suspense fallback={null}>
       <SignInForm />
-    </div>
+    </Suspense>
   );
 }

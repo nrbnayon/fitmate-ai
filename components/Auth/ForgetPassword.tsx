@@ -13,14 +13,15 @@ import { Button } from "@/components/ui/button";
 import { FloatingInput } from "@/components/ui/floating-input";
 import { toast } from "sonner";
 import { emailValidationSchema } from "@/lib/formDataValidation";
+import { useForgotPasswordMutation } from "@/redux/services/authApi";
 import { RightSideImage } from "./RightSideImage";
 
 type FormValues = z.infer<typeof emailValidationSchema>;
 
 const ForgetPassword = () => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [countdown, setCountdown] = useState(41);
   const router = useRouter();
+  const [countdown, setCountdown] = useState(0);
+  const [forgotPassword, { isLoading }] = useForgotPasswordMutation();
 
   const {
     register,
@@ -42,32 +43,38 @@ const ForgetPassword = () => {
     }
   }, [countdown]);
 
-  const handleTrimChange = (field: "email") => (e: React.ChangeEvent<HTMLInputElement>) => {
-    const trimmed = e.target.value.trim();
-    setValue(field, trimmed, { shouldValidate: true });
-  };
+  const handleTrimChange =
+    (field: "email") => (e: React.ChangeEvent<HTMLInputElement>) => {
+      const trimmed = e.target.value.trim();
+      setValue(field, trimmed, { shouldValidate: true });
+    };
 
   const onSubmit = async (data: FormValues) => {
-    setIsLoading(true);
     try {
-      // Simulation
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      console.log("Email for reset:", data.email);
-      
-      toast.success("OTP sent to your email.");
-      router.push(`/verify-otp?flow=reset&email=${encodeURIComponent(data.email)}`); 
-    } catch (error) {
-      console.error("Failed to send OTP:", error);
-      toast.error("Something went wrong. Please try again.");
-    } finally {
-      setIsLoading(false);
+      const response = await forgotPassword({
+        email: data.email.trim(),
+      }).unwrap();
+
+      if (response.success && response.data) {
+        toast.success(response.message || "Reset code sent to your email.");
+        router.push(
+          `/verify-otp?flow=reset&email=${encodeURIComponent(data.email)}&user_id=${response.data.user_id}`,
+        );
+      } else {
+        toast.error(response.message || "Failed to send reset code.");
+      }
+    } catch (error: unknown) {
+      console.error("Forgot password error:", error);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const errorMessage = (error as any)?.data?.message || "Something went wrong. Please try again.";
+      toast.error(errorMessage);
     }
   };
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
 
   return (
@@ -92,7 +99,9 @@ const ForgetPassword = () => {
                 priority
               />
             </div>
-            <h1 className="text-2xl sm:text-3xl font-semibold text-foreground">Reset password</h1>
+            <h1 className="text-2xl sm:text-3xl font-semibold text-foreground">
+              Reset password
+            </h1>
             <p className="text-base sm:text-lg text-secondary">
               To reset password enter your email
             </p>
@@ -128,14 +137,18 @@ const ForgetPassword = () => {
 
             {/* Resend Link */}
             <div className="text-center text-sm sm:text-base">
-              <span className="text-secondary">Didn&apos;t get the email? </span>
+              <span className="text-secondary">
+                Didn&apos;t get the email?{" "}
+              </span>
               <button
                 type="button"
                 onClick={() => setCountdown(60)}
                 disabled={countdown > 0}
                 className="text-primary font-semibold hover:text-primary/80 hover:underline transition-colors disabled:opacity-70 disabled:no-underline"
               >
-                {countdown > 0 ? `Resent in ${formatTime(countdown)}` : "Resend"}
+                {countdown > 0
+                  ? `Resent in ${formatTime(countdown)}`
+                  : "Resend"}
               </button>
             </div>
           </form>

@@ -1,117 +1,126 @@
+// hooks/useUser.ts
+// Custom hook — single interface for auth state throughout the app.
+// Reads from Redux (source of truth), rehydrates from cookies on first load,
+// auto-fetches profile once authenticated, handles logout cleanly.
+
 "use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import {
-  setCredentials,
+  rehydrateAuth,
   logout as logoutAction,
+  setProfile,
   selectCurrentUser,
   selectIsAuthenticated,
+  selectUserRole,
+  selectIsAdmin,
 } from "@/redux/features/authSlice";
-import { usersData } from "@/data/usersData";
+import { tokenStorage } from "@/redux/features/apiSlice";
+import { useLazyGetProfileQuery } from "@/redux/services/authApi";
+import type { UserRole } from "@/types/auth.types";
 
-export interface UserInfo {
-  name: string | null;
-  role: string | null;
+// ─── Return shape ─────────────────────────────────────────────────────────────
+export interface UseUserReturn {
+  // Identity
+  userId: string | null;
+  fullName: string | null;
   email: string | null;
-  image: string | null;
-  accessToken: string | null;
+  name?: string;
+  image?: string;
+  role: UserRole | null;
+  profilePicture: string | null;
+  phoneNumber: string | null;
+  address: string | null;
+  // Auth state
   isAuthenticated: boolean;
-  isLoading: boolean;
+  isAdmin: boolean;
+  isLoading: boolean; // true during initial cookie rehydration check
+  // Actions
+  hasRole: (role: UserRole) => boolean;
+  logout: () => void;
 }
 
-/**
- * Custom hook to manage user authentication state.
- * Synchronizes Redux state with Cookies for persistence.
- */
-export function useUser() {
+// ─── Hook ─────────────────────────────────────────────────────────────────────
+export function useUser(): UseUserReturn {
   const dispatch = useAppDispatch();
   const router = useRouter();
 
-  // Select from Redux Store (Single Source of Truth)
-  const redUser = useAppSelector(selectCurrentUser);
+  const user = useAppSelector(selectCurrentUser);
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
+  const role = useAppSelector(selectUserRole);
+  const isAdmin = useAppSelector(selectIsAdmin);
 
-  // Local loading state for initial hydration check
-  const [isChecking, setIsChecking] = useState(true);
+  // True only during the first-render cookie-rehydration check
+  const [isLoading, setIsLoading] = useState(true);
 
+  // Lazy profile query — fired manually once we confirm authentication
+  const [fetchProfile] = useLazyGetProfileQuery();
+
+  // ── Step 1: Rehydrate from cookies on first render ──────────────────────────
+  // authSlice.buildInitialState() already does this for user_id + role,
+  // but user.full_name / email / profile_picture are not in cookies.
+  // We trigger a profile fetch to fill those in.
   useEffect(() => {
-    // Helper to read cookies safely
-    const getCookie = (name: string) => {
-      if (typeof document === "undefined") return null;
-      const value = `; ${document.cookie}`;
-      const parts = value.split(`; ${name}=`);
-      if (parts.length === 2) return parts.pop()?.split(";").shift() || null;
-      return null;
-    };
+    const accessToken = tokenStorage.getAccessToken();
+    const userRole = tokenStorage.getUserRole() as UserRole | null;
 
-    const hydrateAuth = () => {
-      // If Redux is already authenticated, we are good.
-      if (isAuthenticated) {
-        setIsChecking(false);
-        return;
-      }
+    if (!isAuthenticated && accessToken && userRole) {
+      // Cookies exist but Redux lost state (e.g. hard refresh before slice init)
+      // rehydrateAuth restores Redux state WITHOUT overwriting cookie expiry
+      dispatch(
+        rehydrateAuth({
+          user_id: "", // unknown until profile fetch
+          role: userRole,
+        }),
+      );
+    }
 
-      // precise sync: try to restore session from cookies
-      const accessToken = getCookie("accessToken");
-      const role = getCookie("userRole");
-      const rawEmail = getCookie("userEmail");
-      const email = rawEmail ? decodeURIComponent(rawEmail) : "";
+    setIsLoading(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // run once on mount only
 
-      if (accessToken && role) {
-        // SIMULATE API CALL: Find user details from dummy data
-        const foundUser = usersData.find((u) => u.email === email);
-        const userName = foundUser ? foundUser.name : "User"; // Default if not found
-        const userImage = foundUser ? foundUser.image : undefined;
+  // ── Step 2: Fetch profile once authenticated and not yet loaded ─────────────
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    if (user?.full_name) return; // already enriched — skip
 
-        // Dispatch to Redux to sync state
-        dispatch(
-          setCredentials({
-            user: { name: userName, email, role, image: userImage },
-            token: accessToken,
-          }),
-        );
-      }
+    fetchProfile()
+      .unwrap()
+      .then((res) => {
+        if (res.success && res.data) {
+          dispatch(setProfile(res.data));
+        }
+      })
+      .catch(() => {
+        // Profile fetch failed — non-fatal, user stays logged in
+        // Token refresh is handled automatically by baseQueryWithReauth
+      });
+  }, [isAuthenticated, user?.full_name, fetchProfile, dispatch]);
 
-      setIsChecking(false);
-    };
-
-    hydrateAuth();
-  }, [isAuthenticated, dispatch]);
-
-  const hasRole = (role: string) => redUser?.role === role;
-
+  // ── Logout ──────────────────────────────────────────────────────────────────
   const logout = () => {
-    // 1. Clear Redux State
-    dispatch(logoutAction());
-
-    // 2. Clear Cookies
-    document.cookie =
-      "accessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-    document.cookie =
-      "refreshToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-    document.cookie =
-      "userRole=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-    document.cookie =
-      "userEmail=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-
-    console.log("User logged out successfully");
-
-    // 3. Redirect
-    router.push("/signin");
+    dispatch(logoutAction()); // clears Redux + cookies via tokenStorage.clearAll()
+    router.replace("/signin");
   };
 
+  // ── Role check ───────────────────────────────────────────────────────────────
+  const hasRole = (r: UserRole): boolean => user?.role === r;
+
   return {
-    name: redUser?.name || null,
-    role: redUser?.role || null,
-    email: redUser?.email || null,
-    image: redUser?.image || null,
-    // We don't necessarily store the token string in the public `user` object in Redux if we want to be minimal,
-    // but authSlice has it.
-    accessToken: useAppSelector((state) => state.auth.token),
+    userId: user?.user_id ?? null,
+    fullName: user?.full_name ?? null,
+    name: user?.full_name ?? undefined,
+    image: user?.profile_picture ?? undefined,
+    email: user?.email ?? null,
+    role: role,
+    profilePicture: user?.profile_picture ?? null,
+    phoneNumber: user?.phone_number ?? null,
+    address: user?.address ?? null,
     isAuthenticated,
-    isLoading: isChecking,
+    isAdmin,
+    isLoading,
     hasRole,
     logout,
   };

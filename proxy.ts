@@ -1,223 +1,98 @@
-// proxy.ts - Next.js v16 Role-based Access Control Middleware
+
 import { NextRequest, NextResponse } from "next/server";
-import { JWTPayload, jwtVerify } from "jose";
 
 // ============================================
-// CONFIGURATION
+// ROLES
 // ============================================
 
-// Define Roles
 const ROLES = {
-  ADMIN: "admin"
+  ADMIN: "admin",
 } as const;
 
 type Role = (typeof ROLES)[keyof typeof ROLES];
 
-// Public routes (no authentication required)
-const PUBLIC_ROUTES = [
-  "/",
+// ============================================
+// ROUTE LISTS
+// ============================================
+
+// ── Auth routes ───────────────────────────────────────────────────────────────
+// Pages that only make sense when the user is NOT authenticated.
+// Authenticated users hitting these get bounced to their dashboard.
+const AUTH_ROUTES = [
   "/signin",
-  "/signup",
   "/forgot-password",
   "/reset-password",
-  "/verify-email",
-  "/verify-otp",
   "/reset-success",
-  "/success",
-  "/terms",
+  "/verify-otp",
+];
+
+// ── Standalone public auth-flow page ─────────────────────────────────────────
+// /success is shown after email verification / payment — not a login page,
+// so authenticated users are NOT bounced away from it.
+const PUBLIC_ONLY_ROUTES = ["/success"];
+
+// ── Info / legal routes ───────────────────────────────────────────────────────
+// Always accessible to EVERYONE — authenticated or not, any role.
+// NOTE: /privacy-policy lives inside app/(protected)/(shared)/ in the file tree,
+// but it must remain publicly readable (legal requirement), so we allow it here
+// before any auth check is performed.
+const INFO_ROUTES = [
   "/privacy-policy",
-  "/about-us",
+  "/terms", // add page later if needed
+  "/about-us", // add page later if needed
 ];
 
-// Auth routes (redirect to dashboard if already logged in)
-const AUTH_ROUTES = ["/signin", "/signup", "/forgot-password", "/reset-password"];
+// ── Universal protected routes ────────────────────────────────────────────────
+// Accessible to ANY authenticated user regardless of role.
+// Maps to app/(protected)/(shared)/*
+const UNIVERSAL_PROTECTED_ROUTES = ["/profile", "/settings", "/notifications"];
 
-// Protected routes accessible by ALL authenticated users
-// (Merges previous COMMON_PROTECTED_ROUTES and SHARED_ROUTES)
-const UNIVERSAL_PROTECTED_ROUTES = [
-  "/notifications",
-  "/settings",
-  "/profile",
-  "/privacy-policy", 
-  "/terms",
-  "/about-us",
-];
-
-// Role-specific access configuration
-// Keys are roles, values are arrays of allowed route prefixes
-const ROLE_ACCESS_CONFIG: Record<Role, string[]> = {
-  [ROLES.ADMIN]: ["/"],
+// ── Admin-only protected routes ───────────────────────────────────────────────
+// Maps to app/(protected)/(admin)/*
+const ROLE_ROUTES: Record<Role, string[]> = {
+  [ROLES.ADMIN]: [
+    "/dashboard",
+    "/categories",
+    "/commission-tracking",
+    "/order-management",
+    "/payment-history",
+    "/payment-approval",
+    "/products",
+    "/user-management",
+  ],
 };
 
-// Default redirect paths for each role after login
+// ── Default redirect landing per role ─────────────────────────────────────────
 const ROLE_DEFAULT_PATHS: Record<Role, string> = {
-  [ROLES.ADMIN]: "/",
+  [ROLES.ADMIN]: "/dashboard",
 };
-
-// JWT Secret - Use environment variable in production
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET || "your-secret-key-change-in-production"
-);
 
 // ============================================
 // HELPER FUNCTIONS
 // ============================================
 
 /**
- * Verify JWT token
- */
-async function verifyToken(token: string): Promise<JWTPayload | null> {
-  try {
-    const { payload } = await jwtVerify(token, JWT_SECRET);
-    return payload;
-  } catch (error) {
-    console.error("❌ Error verifying token:", error);
-    return null;
-  }
-}
-
-/**
- * Check if a path matches any route in the list (Exact or Sub-path)
+ * Exact match OR directory-boundary prefix match.
+ * "/dashboard"  →  matches "/dashboard" and "/dashboard/stats"
+ *                  but NOT "/dashboard-old"
  */
 function matchesRoute(pathname: string, routes: string[]): boolean {
-  return routes.some((route) => {
-    // Exact match
-    if (pathname === route) return true;
-    // Prefix match (e.g., /dashboard matches /dashboard/*)
-    // Ensure we match directory boundary so /super-admin doesn't match /super-admin-fake
-    if (pathname.startsWith(route + "/")) return true;
-    return false;
-  });
+  return routes.some(
+    (route) => pathname === route || pathname.startsWith(route + "/"),
+  );
 }
 
-/**
- * Check if a user role has access to a specific path
- */
-function hasRoleAccess(pathname: string, userRole: string): boolean {
-  // 0. Super User / Admin Bypass
-  if (userRole === ROLES.ADMIN) return true;
-
-  // 1. Check Universal Protected Routes (All Auth Users)
-  if (matchesRoute(pathname, UNIVERSAL_PROTECTED_ROUTES)) {
-    return true;
-  }
-
-  // 2. Check Role-Specific Routes
-  const roleRoutes = ROLE_ACCESS_CONFIG[userRole as Role];
-  if (roleRoutes && matchesRoute(pathname, roleRoutes)) {
-    return true;
-  }
-
-  return false;
-}
-
-/**
- * Get the appropriate redirect path for a role
- */
 function getRoleDefaultPath(userRole: string): string {
-  return ROLE_DEFAULT_PATHS[userRole as Role] || "/";
+  return ROLE_DEFAULT_PATHS[userRole as Role] ?? "/dashboard";
 }
 
-// ============================================
-// MAIN PROXY FUNCTION (Next.js v16)
-// ============================================
+function hasRoleAccess(pathname: string, userRole: string): boolean {
+  const allowed = ROLE_ROUTES[userRole as Role];
+  if (!allowed) return false;
+  return matchesRoute(pathname, allowed);
+}
 
-export async function proxy(request: NextRequest) {
-  const { pathname } = request.nextUrl;
-
-  // Skip middleware for static files, API routes and PWA files
-  if (
-    pathname.startsWith("/_next/") ||
-    pathname.startsWith("/api/") ||
-    pathname.includes(".") || // Catches files with extensions
-    pathname === "/favicon.ico" ||
-    pathname === "/manifest.json" ||
-    pathname === "/sw.js" ||
-    pathname === "/~offline"
-  ) {
-    return NextResponse.next();
-  }
-
-  console.log("🔐 Middleware:", pathname);
-
-  // ============================================
-  // STEP 1: Check Public Routes
-  // ============================================
-  const isPublic = matchesRoute(pathname, PUBLIC_ROUTES);
-
-  // ============================================
-  // STEP 2: Extract & Verify Auth
-  // ============================================
-  const accessToken = request.cookies.get("accessToken")?.value;
-  let userRole = request.cookies.get("userRole")?.value;
-  let isAuthenticated = false;
-  let user = null;
-
-  if (accessToken) {
-    // Development Bypass Tokens
-    if (accessToken === "dev-admin-token" || accessToken.startsWith("mock_access_token_")) {
-      user = { email: "admin@gmail.com", role: ROLES.ADMIN };
-      isAuthenticated = true;
-      userRole = userRole || ROLES.ADMIN;
-    } else {
-      // Real JWT Verification
-      user = await verifyToken(accessToken);
-      isAuthenticated = !!user;
-      if (user && !userRole) {
-        userRole = (user.role as string) || (user.userRole as string);
-      }
-    }
-  }
-
-  // ============================================
-  // STEP 3: Handle Public Routes & Redirects
-  // ============================================
-  if (isPublic) {
-    // If user is authenticated and tries to access login/signup, redirect to dashboard
-    if (isAuthenticated && matchesRoute(pathname, AUTH_ROUTES)) {
-      const defaultPath = getRoleDefaultPath(userRole || ROLES.ADMIN);
-      return NextResponse.redirect(new URL(defaultPath, request.url));
-    }
-
-    // Allow access to public route
-    const response = NextResponse.next();
-    // Security Headers
-    response.headers.set("X-Frame-Options", "DENY");
-    response.headers.set("X-Content-Type-Options", "nosniff");
-    response.headers.set("X-XSS-Protection", "1; mode=block");
-    response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
-    return response;
-  }
-
-  // ============================================
-  // STEP 4: Handle Protected Routes
-  // ============================================
-  
-  // If we are here, the route is NOT public.
-  // We assume specific deny-list implies everything else is protected? 
-  // OR we check if it matches a known protected path.
-  // NOTE: Original logic had a "Step 5" for unknown routes handling. 
-  // To be safe and "secure", we treat non-public routes as protected by default.
-  
-  if (!isAuthenticated) {
-    const loginUrl = new URL("/signin", request.url);
-    loginUrl.searchParams.set("redirect", pathname);
-    console.log("❌ Unauthorized - Redirecting to login");
-    return NextResponse.redirect(loginUrl);
-  }
-
-  // Verify Role Access
-  if (!hasRoleAccess(pathname, userRole || "")) {
-    console.log("❌ Forbidden - User role does not have access to:", pathname);
-    // Determine if it's a valid route at all? 
-    // Ideally we should 404 if it doesn't exist, but middleware doesn't know filesystem.
-    // For security, redirecting to default path is safe.
-    const defaultPath = getRoleDefaultPath(userRole || ROLES.ADMIN);
-    return NextResponse.redirect(new URL(defaultPath, request.url));
-  }
-
-  console.log("✅ Authorized - Access granted");
-  const response = NextResponse.next();
+function withSecurityHeaders(response: NextResponse): NextResponse {
   response.headers.set("X-Frame-Options", "DENY");
   response.headers.set("X-Content-Type-Options", "nosniff");
   response.headers.set("X-XSS-Protection", "1; mode=block");
@@ -226,18 +101,166 @@ export async function proxy(request: NextRequest) {
 }
 
 // ============================================
-// MIDDLEWARE CONFIGURATION
+// MAIN PROXY FUNCTION
+// ============================================
+
+export async function proxy(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  // ── Bypass: Next.js internals, API routes, PWA files, static assets ──────────
+  if (
+    pathname.startsWith("/_next/") ||
+    pathname.startsWith("/api/") ||
+    pathname === "/favicon.ico" ||
+    pathname === "/manifest.json" ||
+    pathname === "/manifest.webmanifest" ||
+    pathname === "/sw.js" ||
+    pathname === "/~offline" || // PWA offline page — Next.js handles it natively
+    pathname.includes(".") // any file with an extension (.png, .svg, .js …)
+  ) {
+    return NextResponse.next();
+  }
+
+  // ============================================
+  // STEP 1: Read auth state from cookies
+  // ============================================
+  const accessToken = request.cookies.get("accessToken")?.value;
+  const refreshToken = request.cookies.get("refreshToken")?.value;
+  const userRole = request.cookies.get("userRole")?.value ?? "";
+
+  // isAuthenticated requires a valid accessToken cookie.
+  // Having only a refreshToken means the access token expired — the
+  // client-side baseQueryWithReauth will handle obtaining a new one,
+  // but only AFTER it makes a failing request. At the middleware level we
+  // can't proactively refresh, so we let the client through only when
+  // we have an accessToken. If only a refreshToken exists, treat as
+  // "needs refresh" — redirect to /signin so the page can bootstrap freshly.
+  const isAuthenticated = !!accessToken;
+  const hasRefreshTokenOnly = !accessToken && !!refreshToken;
+  const isAdmin = isAuthenticated && userRole === ROLES.ADMIN;
+
+  // ============================================
+  // STEP 2: INFO routes — always accessible, skip ALL auth logic
+  // /privacy-policy  /terms  /about-us
+  // ============================================
+  if (matchesRoute(pathname, INFO_ROUTES)) {
+    return withSecurityHeaders(NextResponse.next());
+  }
+
+  // ============================================
+  // STEP 3: Root "/" — dual behavior
+  //   Authenticated admin  → /dashboard
+  //   Unauthenticated      → render app/page.tsx (landing or /signin redirect)
+  // ============================================
+  if (pathname === "/") {
+    if (isAdmin) {
+      return NextResponse.redirect(
+        new URL(getRoleDefaultPath(ROLES.ADMIN), request.url),
+      );
+    }
+    // Not authenticated → app/page.tsx handles the UI
+    return withSecurityHeaders(NextResponse.next());
+  }
+
+  // ============================================
+  // STEP 4: AUTH routes — bounce away if already logged in
+  // /signin  /forgot-password  /reset-password  /reset-success  /verify-otp
+  // ============================================
+  if (matchesRoute(pathname, AUTH_ROUTES)) {
+    if (isAdmin) {
+      return NextResponse.redirect(
+        new URL(getRoleDefaultPath(ROLES.ADMIN), request.url),
+      );
+    }
+    return withSecurityHeaders(NextResponse.next());
+  }
+
+  // ============================================
+  // STEP 5: Public-only routes (not auth pages, not protected)
+  // /success
+  // ============================================
+  if (matchesRoute(pathname, PUBLIC_ONLY_ROUTES)) {
+    return withSecurityHeaders(NextResponse.next());
+  }
+
+  // ============================================
+  // STEP 6: Everything else is PROTECTED — deny-by-default
+  // ============================================
+
+  // 6a. Not authenticated at all → redirect to /signin with return path
+  if (!isAuthenticated && !hasRefreshTokenOnly) {
+    const loginUrl = new URL("/signin", request.url);
+    loginUrl.searchParams.set("redirect", pathname);
+    return NextResponse.redirect(loginUrl);
+  }
+
+  // 6b. Has refresh token but no access token — access token has expired.
+  // The middleware cannot call the refresh API (no fetch in edge runtime).
+  // Let the request through only for universal protected routes where the
+  // client-side reauth logic will fire on the first 401, then redirect.
+  // For all other protected routes, redirect to /signin — the AuthInitializer
+  // will detect cookies and silently rehydrate after client-side refresh.
+  if (hasRefreshTokenOnly) {
+    // Allow universal routes (profile, settings, notifications) through
+    // so client-side reauth can silently refresh without losing the page.
+    if (matchesRoute(pathname, UNIVERSAL_PROTECTED_ROUTES)) {
+      return withSecurityHeaders(NextResponse.next());
+    }
+    // For all other protected routes, bounce to signin.
+    // The signin page & AuthInitializer will detect the refresh token,
+    // rehydrate, and redirect back to the intended destination.
+    const loginUrl = new URL("/signin", request.url);
+    loginUrl.searchParams.set("redirect", pathname);
+    return NextResponse.redirect(loginUrl);
+  }
+
+  // 6b. Authenticated but role cookie is missing / unrecognized
+  if (!userRole) {
+    const loginUrl = new URL("/signin", request.url);
+    loginUrl.searchParams.set("error", "missing_role");
+    return NextResponse.redirect(loginUrl);
+  }
+
+  // 6c. Universal protected routes — any authenticated role
+  // /profile  /settings  /notifications
+  if (matchesRoute(pathname, UNIVERSAL_PROTECTED_ROUTES)) {
+    return withSecurityHeaders(NextResponse.next());
+  }
+
+  // 6d. Role-specific route check
+  // /dashboard  /commission-tracking  /order-management  etc.
+  if (hasRoleAccess(pathname, userRole)) {
+    return withSecurityHeaders(NextResponse.next());
+  }
+
+  // 6e. Authenticated but role does NOT have access → safe fallback
+  console.warn(
+    `🚫 Access denied: role="${userRole}" tried to access "${pathname}"`,
+  );
+  return NextResponse.redirect(
+    new URL(getRoleDefaultPath(userRole), request.url),
+  );
+}
+
+// ============================================
+// MIDDLEWARE MATCHER
 // ============================================
 
 export const config = {
   matcher: [
     /*
-     * Match all request paths except:
-     * - _next/static (static files)
-     * - _next/image (image optimization)
-     * - favicon.ico
-     * - public folder files
+     * Intercept ALL paths EXCEPT:
+     *  - _next/static            compiled JS / CSS bundles
+     *  - _next/image             Next.js image optimization
+     *  - favicon.ico, favicon-96x96.png
+     *  - PWA files               manifest.json, manifest.webmanifest,
+     *                            sw.js, swe-worker-*.js, workbox-*.js,
+     *                            web-app-manifest-*.png, apple-touch-icon.png
+     *  - Public asset folders    /icons/  /images/
+     *  - Static file extensions  svg, png, jpg, jpeg, gif, webp, ico,
+     *                            woff, woff2, ttf, eot, otf,
+     *                            mp4, mp3, pdf, csv, xml, txt, js
      */
-    "/((?!_next/static|_next/image|favicon.ico|manifest\\.json|sw\\.js|web-app-manifest|apple-touch-icon|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
+    "/((?!_next/static|_next/image|favicon\\.ico|favicon-96x96\\.png|manifest\\.json|manifest\\.webmanifest|sw\\.js|swe-worker|workbox|web-app-manifest|apple-touch-icon|icons/|images/|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff|woff2|ttf|eot|otf|mp4|mp3|pdf|csv|xml|txt|js)$).*)",
   ],
 };

@@ -1,21 +1,36 @@
 "use client";
 
 import { DynamicTable } from "@/components/Shared/DynamicTable";
-import { commissionTrackingData } from "@/data/commissionTrackingData";
-import { CommissionTracking, PayoutStatus } from "@/types/commissionTracking";
+import { Commission, PayoutStatus, CommissionTrackingResponse } from "@/types/commissionTracking";
 import { TableConfig } from "@/types/table.types";
-import { useState } from "react";
+import { useMemo } from "react";
 import { cn } from "@/lib/utils";
 
-export default function CommissionTrackingTable() {
-  const [data] = useState<CommissionTracking[]>(commissionTrackingData);
+interface CommissionTrackingTableProps {
+  response?: CommissionTrackingResponse;
+  isLoading: boolean;
+  onSearchChange: (query: string) => void;
+  onPageChange: (page: number) => void;
+  currentPage: number;
+  pageSize: number;
+}
 
+export default function CommissionTrackingTable({
+  response,
+  isLoading,
+  onSearchChange,
+  onPageChange,
+  currentPage,
+  pageSize
+}: CommissionTrackingTableProps) {
   const statusStyles: Record<PayoutStatus, string> = {
-    paid: "text-emerald-500 font-medium",
-    pending: "text-amber-500 font-medium",
+    Paid: "text-emerald-500 font-medium",
+    Pending: "text-amber-500 font-medium",
   };
 
-  const tableConfig: TableConfig<CommissionTracking> = {
+  const tableData = useMemo(() => response?.data?.table?.commissions || [], [response]);
+
+  const tableConfig: TableConfig<Commission> = {
     columns: [
       {
         key: "creator",
@@ -28,28 +43,30 @@ export default function CommissionTrackingTable() {
         sortable: true,
       },
       {
-        key: "totalSales",
+        key: "total_sales",
         header: "Total Sales",
         sortable: true,
+        render: (value) => `$${value}`,
       },
       {
         key: "commission",
-        header: "Commission (15%)",
+        header: "Commission",
         sortable: true,
+        render: (value) => `$${value}`,
       },
-      {
-        key: "status",
-        header: "Progress",
-        sortable: true,
-        render: (value: PayoutStatus) => (
-          <span className={cn(
-            "capitalize",
-            statusStyles[value]
-          )}>
-            {value}
-          </span>
-        ),
-      },
+      // {
+      //   key: "progress",
+      //   header: "Progress",
+      //   sortable: true,
+      //   render: (value: PayoutStatus) => (
+      //     <span className={cn(
+      //       "capitalize",
+      //       statusStyles[value]
+      //     )}>
+      //       {value}
+      //     </span>
+      //   ),
+      // },
     ],
     showActions: false,
   };
@@ -57,10 +74,21 @@ export default function CommissionTrackingTable() {
   return (
     <div className="w-full">
       <DynamicTable
-        data={data}
+        data={tableData}
         config={tableConfig}
-        filter={{ enabled: true, searchKeys: ["creator", "status"] }}
-        pagination={{ enabled: true, pageSize: 8 }}
+        loading={isLoading}
+        filter={{ 
+          enabled: true, 
+          searchKeys: ["creator", "progress"],
+          onSearchChange: onSearchChange
+        }}
+        pagination={{ 
+          enabled: true, 
+          pageSize: pageSize,
+          totalItems: response?.data?.table?.total || 0,
+          currentPage: currentPage,
+          onPageChange: onPageChange
+        }}
         headerClassName="bg-[#BA4E76] text-white"
         rowClassName="border-b border-[#EAECF0]"
       />
