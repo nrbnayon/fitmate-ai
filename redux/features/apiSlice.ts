@@ -90,7 +90,7 @@ const onTokenRefreshed = (token: string) => {
 
 // ─── Base query ───────────────────────────────────────────────────────────────
 const rawBaseQuery = fetchBaseQuery({
-  baseUrl: process.env.NEXT_PUBLIC_API_URL ?? "http://10.10.12.62:6005",
+  baseUrl: process.env.NEXT_PUBLIC_API_URL ?? "https://api.xandra.co",
   prepareHeaders: (headers) => {
     // 0. Check for a skip-auth flag
     if (headers.has("x-skip-auth")) {
