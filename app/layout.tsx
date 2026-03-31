@@ -1,4 +1,4 @@
-// app\layout.tsx
+// app/layout.tsx
 import type { Metadata } from "next";
 import { Inter, Geist_Mono } from "next/font/google";
 import "./globals.css";
@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/components/ui/theme-provider";
 import { Toaster } from "sonner";
 import StoreProvider from "@/redux/StoreProvider";
 import { AuthInitializer } from "@/components/Auth/AuthInitializer";
+
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
@@ -18,7 +19,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL(
-    process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
+    process.env.NEXT_PUBLIC_APP_URL || "https://fitmate-ai-ten.vercel.app"
   ),
   title: {
     default: "FitMate AI - AI Powered Xandra Platform",
@@ -50,9 +51,7 @@ export const metadata: Metadata = {
     "help center",
     "support",
     "career",
-    ""
   ],
-  // PWA Configuration
   manifest: "/manifest.json",
   authors: [{ name: "Nayon" }],
   creator: "Nayon",
@@ -62,6 +61,16 @@ export const metadata: Metadata = {
     address: false,
     telephone: false,
   },
+
+  // ✅ All icons declared here — Next.js injects them correctly into <head>
+  icons: {
+    icon: "/favicon-96x96.png",
+    apple: "/apple-touch-icon.png",   // replaces <link rel="apple-touch-icon">
+  },
+
+  // ✅ theme-color declared here — replaces <meta name="theme-color">
+  themeColor: "#F3A6BE",
+
   robots: {
     index: true,
     follow: true,
@@ -83,7 +92,7 @@ export const metadata: Metadata = {
       "FitMate AI - AI Powered Xandra Platform for managing your Match Fever Lipstick.",
     images: [
       {
-        url: "/icons/logo.png",
+        url: "https://fitmate-ai-ten.vercel.app/icons/logo.png",
         width: 1200,
         height: 630,
         alt: "FitMate AI Dashboard",
@@ -95,7 +104,7 @@ export const metadata: Metadata = {
     title: "FitMate AI - AI Powered Xandra Platform",
     description:
       "FitMate AI - AI Powered Xandra Platform for managing your Match Fever Lipstick.",
-    images: ["/icons/logo.png"],
+    images: ["https://fitmate-ai-ten.vercel.app/icons/logo.png"],
     creator: "@nrbnayon",
   },
   alternates: {
@@ -113,13 +122,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <meta
-          name="viewport"
-          content="width=device-width, initial-scale=1, maximum-scale=5"
-        />
-        <meta name="theme-color" content="#F3A6BE" />
-        <link rel="icon" href="/favicon-96x96.png" />
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        {/* ✅ Only structured data stays here — everything else moved to metadata */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{

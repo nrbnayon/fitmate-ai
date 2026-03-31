@@ -105,7 +105,7 @@ export const productApi = apiSlice.injectEndpoints({
     updateCategory: builder.mutation<SingleCategoryResponse, { id: number; payload: CategoryMutationPayload }>({
       query: ({ id, payload }) => ({
         url: `/products/categories/${id}/`,
-        method: "POST",
+        method: "PUT",
         body: payload,
       }),
       invalidatesTags: (_result, _error, { id }) => [
