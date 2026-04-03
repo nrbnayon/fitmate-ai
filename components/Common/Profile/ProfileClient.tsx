@@ -205,6 +205,8 @@ export default function ProfileClient() {
         ref={fileInputRef}
         onChange={handleFileChange}
         accept="image/*"
+        aria-label="Upload profile picture"
+        title="Upload profile picture"
         className="hidden"
       />
 
@@ -587,6 +589,8 @@ export default function ProfileClient() {
                               onChange={(e) =>
                                 setShowPassword(e.target.checked)
                               }
+                              aria-label="Show passwords"
+                              title="Show passwords"
                               className="rounded"
                             />
                             <label

@@ -1,5 +1,5 @@
 // app/layout.tsx
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ui/theme-provider";
@@ -68,9 +68,6 @@ export const metadata: Metadata = {
     apple: "/apple-touch-icon.png",   // replaces <link rel="apple-touch-icon">
   },
 
-  // ✅ theme-color declared here — replaces <meta name="theme-color">
-  themeColor: "#F3A6BE",
-
   robots: {
     index: true,
     follow: true,
@@ -112,6 +109,10 @@ export const metadata: Metadata = {
   },
   category: "Software",
   classification: "Dashboard Management System",
+};
+
+export const viewport: Viewport = {
+  themeColor: "#F3A6BE",
 };
 
 export default function RootLayout({

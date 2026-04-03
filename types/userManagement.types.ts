@@ -92,6 +92,9 @@ export interface CreatorVideo {
     video_url: string;
     product_name: string;
     product_image: string;
+    product_shade: string;
+    product_colour_hex: string;
+    product_category: string;
     created_at: string;
 }
 
