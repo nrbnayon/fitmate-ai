@@ -415,6 +415,8 @@ export default function PrivacyPolicyClient() {
                   <button
                     onClick={() => handleSaveSection(policy.id)}
                     disabled={isSaving}
+                    aria-label="Save section"
+                    title="Save section"
                     className="p-3 bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white rounded-2xl transition-all active:scale-95 disabled:opacity-50 flex items-center gap-2 cursor-pointer"
                   >
                     <Save className="w-5 h-5" />
@@ -425,6 +427,8 @@ export default function PrivacyPolicyClient() {
 
                   <button
                     onClick={() => handleDeletePolicy(policy.id)}
+                    aria-label="Delete section"
+                    title="Delete section"
                     className="p-3 text-slate-300 hover:text-red-600 hover:bg-red-50 rounded-2xl transition-all cursor-pointer"
                   >
                     <Trash2 className="w-5 h-5" />

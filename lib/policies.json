@@ -1,0 +1,178 @@
+{
+  "appInfo": {
+    "name": "Beauty Vibe",
+    "version": "1.0.0",
+    "platforms": ["iOS", "Android"],
+    "lastUpdated": "2024-04-03"
+  },
+  "privacyPolicy": {
+    "title": "Privacy Policy",
+    "effectiveDate": "2024-04-03",
+    "sections": [
+      {
+        "id": 1,
+        "title": "Introduction",
+        "content": "Welcome to Beauty Vibe. We are committed to protecting your privacy and ensuring you have a positive experience on our platform. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our mobile application and website."
+      },
+      {
+        "id": 2,
+        "title": "Information We Collect",
+        "subsections": [
+          {
+            "title": "Personal Information",
+            "content": "We collect information that you voluntarily provide to us when you register, create a profile, or use our services. This may include:\n• Name\n• Email address\n• Phone number\n• Age and date of birth\n• Gender\n• Fitness goals and preferences\n• Health and wellness data"
+          },
+          {
+            "title": "Automatic Information",
+            "content": "When you access our app, we automatically collect certain information:\n• Device type and operating system\n• IP address\n• App usage patterns\n• Crash reports\n• Location data (with your permission)\n• Device identifiers (IDFA for iOS, Android Advertising ID)"
+          },
+          {
+            "title": "Health and Fitness Data",
+            "content": "With your explicit consent, we may collect:\n• Activity tracking data\n• Exercise and workout information\n• Nutritional information\n• Sleep patterns\n• Heart rate and biometric data\n• Integration with health platforms (Apple Health, Google Fit)"
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "title": "How We Use Your Information",
+        "content": "We use the information we collect for various purposes:\n• Providing and improving our services\n• Personalizing your experience\n• Communicating with you about updates and features\n• Analyzing usage patterns to enhance functionality\n• Ensuring security and preventing fraud\n• Complying with legal obligations\n• Creating de-identified statistical data"
+      },
+      {
+        "id": 4,
+        "title": "Information Sharing",
+        "content": "We do not sell, trade, or rent your personal information. We may share information:\n• With service providers who assist in our operations\n• When required by law or legal process\n• To protect our rights and your safety\n• With your explicit consent\n• In case of business transfer or merger"
+      },
+      {
+        "id": 5,
+        "title": "Data Security",
+        "content": "We implement industry-standard security measures to protect your information:\n• End-to-end encryption for sensitive data\n• Secure server infrastructure\n• Regular security audits\n• Firewall protection\n• SSL/TLS encryption for data transmission\n\nHowever, no method of transmission or storage is completely secure. We encourage you to use strong passwords and keep your account credentials confidential."
+      },
+      {
+        "id": 6,
+        "title": "Your Privacy Rights",
+        "content": "Depending on your location, you may have the following rights:\n• Right to access your personal data\n• Right to correct inaccurate data\n• Right to delete your data\n• Right to opt-out of marketing communications\n• Right to data portability\n• Right to withdraw consent at any time\n\nTo exercise these rights, please contact us at privacy@fitmate.com"
+      },
+      {
+        "id": 7,
+        "title": "Children's Privacy",
+        "content": "Beauty Vibe is not intended for children under 13 years of age. We do not knowingly collect personal information from children under 13. If we become aware that we have collected personal information from a child under 13, we will take steps to delete such information and terminate the child's account."
+      },
+      {
+        "id": 8,
+        "title": "Third-Party Services",
+        "content": "Our app may integrate with third-party services including:\n• Payment processors\n• Analytics providers\n• Cloud storage services\n• Social media platforms\n• Health and fitness APIs\n\nEach third-party service has its own privacy policy. We are not responsible for their practices."
+      },
+      {
+        "id": 9,
+        "title": "Cookies and Tracking",
+        "content": "We use cookies and similar technologies to:\n• Remember your preferences\n• Understand how you use our app\n• Improve user experience\n• Track analytics\n\nYou can control cookie settings through your device and app settings."
+      },
+      {
+        "id": 10,
+        "title": "Data Retention",
+        "content": "We retain your personal data for as long as necessary to provide our services and fulfill the purposes outlined in this policy. You can request deletion of your data at any time, subject to legal requirements."
+      },
+      {
+        "id": 11,
+        "title": "Changes to This Policy",
+        "content": "We may update this Privacy Policy periodically. We will notify you of any significant changes via email or through the app. Your continued use of Beauty Vibe after such modifications constitutes your acceptance of the updated policy."
+      },
+      {
+        "id": 12,
+        "title": "Contact Us",
+        "content": "If you have questions about this Privacy Policy, please contact us:\n\nEmail: privacy@fitmate.com\nMailing Address: Beauty Vibe, 123 Wellness Street, Health City, HC 12345\nPhone: +1 (555) 123-4567\n\nFor data protection inquiries, contact our Data Protection Officer at dpo@fitmate.com"
+      }
+    ]
+  },
+  "termsAndConditions": {
+    "title": "Terms and Conditions",
+    "effectiveDate": "2024-04-03",
+    "sections": [
+      {
+        "id": 1,
+        "title": "Agreement to Terms",
+        "content": "By accessing and using the Beauty Vibe mobile application (iOS and Android versions), you accept and agree to be bound by and abide by the terms and condition of this agreement. If you do not agree to abide by the above, please do not use this service."
+      },
+      {
+        "id": 2,
+        "title": "Use License",
+        "content": "Permission is granted to temporarily download one copy of the materials (information or software) on Beauty Vibe for personal, non-commercial transitory viewing only. This is the grant of a license, not a transfer of title, and under this license you may not:\n• Modify or copy the materials\n• Use the materials for any commercial purpose or for any public display\n• Attempt to decompile or reverse engineer any software\n• Remove any copyright or other proprietary notations from the materials\n• Transfer the materials to another person or 'mirror' the materials on any other server\n• Violate any applicable laws or regulations in your use of the materials"
+      },
+      {
+        "id": 3,
+        "title": "Disclaimer",
+        "content": "The materials on Beauty Vibe are provided on an 'as is' basis. Beauty Vibe makes no warranties, expressed or implied, and hereby disclaims and negates all other warranties including, without limitation, implied warranties or conditions of merchantability, fitness for a particular purpose, or non-infringement of intellectual property or other violation of rights."
+      },
+      {
+        "id": 4,
+        "title": "Limitations",
+        "content": "In no event shall Beauty Vibe or its suppliers be liable for any damages (including, without limitation, damages for loss of data or profit, or due to business interruption) arising out of the use or inability to use the materials on Beauty Vibe, even if Beauty Vibe or an authorized representative has been notified orally or in writing of the possibility of such damage."
+      },
+      {
+        "id": 5,
+        "title": "Accuracy of Materials",
+        "content": "The materials appearing on Beauty Vibe could include technical, typographical, or photographic errors. Beauty Vibe does not warrant that any of the materials on its website are accurate, complete, or current. Beauty Vibe may make changes to the materials contained on its website at any time without notice."
+      },
+      {
+        "id": 6,
+        "title": "Links",
+        "content": "Beauty Vibe has not reviewed all of the sites linked to its website and is not responsible for the contents of any such linked site. The inclusion of any link does not imply endorsement by Beauty Vibe of the site. Use of any such linked website is at the user's own risk."
+      },
+      {
+        "id": 7,
+        "title": "Modifications",
+        "content": "Beauty Vibe may revise these terms of service for its website at any time without notice. By using this website, you are agreeing to be bound by the then current version of these terms of service."
+      },
+      {
+        "id": 8,
+        "title": "User Accounts and Passwords",
+        "content": "If you register for an account on Beauty Vibe, you are responsible for maintaining the confidentiality of your account and password and for restricting access to your account. You agree to accept responsibility for all activities that occur under your account or password. You must notify us immediately of any unauthorized uses of your account."
+      },
+      {
+        "id": 9,
+        "title": "User Content",
+        "content": "You retain all rights to any content you submit, post or display on or through Beauty Vibe. By submitting, posting or displaying content on Beauty Vibe, you grant us a worldwide, non-exclusive, royalty-free license to use, reproduce, modify, and distribute such content. You represent and warrant that you have all necessary rights to grant this license."
+      },
+      {
+        "id": 10,
+        "title": "Prohibited Conduct",
+        "content": "You agree not to engage in any of the following prohibited behavior:\n• Using the app for illegal purposes or in violation of any laws\n• Harassing or causing distress or inconvenience to any person\n• Transmitting obscene or offensive content\n• Disrupting the normal flow of dialogue within our app\n• Attempting to gain unauthorized access to our systems\n• Creating multiple accounts to circumvent our policies"
+      },
+      {
+        "id": 11,
+        "title": "Health and Fitness Disclaimer",
+        "content": "Beauty Vibe provides fitness and health-related information and tools. However:\n• We are not healthcare providers\n• Information provided is not medical advice\n• Always consult with qualified healthcare professionals before beginning any new fitness program\n• We are not responsible for any injuries or damages resulting from use of our app\n• Users assume all responsibility for their fitness activities"
+      },
+      {
+        "id": 12,
+        "title": "Payment Terms",
+        "content": "If you purchase premium features or subscriptions:\n• All sales are final unless otherwise stated\n• Subscription automatically renews unless canceled\n• Refunds are subject to our refund policy\n• Payment information is processed securely by third-party payment processors\n• You will receive invoices/receipts via email"
+      },
+      {
+        "id": 13,
+        "title": "Intellectual Property Rights",
+        "content": "The content, features, and functionality of Beauty Vibe are owned by Beauty Vibe, its licensors, or other providers of such material and are protected by international copyright, trademark, and other intellectual property laws."
+      },
+      {
+        "id": 14,
+        "title": "Termination",
+        "content": "Beauty Vibe may terminate your account and access to the app at any time, for any reason, with or without cause. Upon termination:\n• Your right to use the app immediately ceases\n• Any content you posted may be retained by us\n• You remain liable for any outstanding payments"
+      },
+      {
+        "id": 15,
+        "title": "Governing Law",
+        "content": "These terms and conditions are governed by and construed in accordance with the laws of the jurisdiction where Beauty Vibe operates, and you irrevocably submit to the exclusive jurisdiction of the courts in that location."
+      },
+      {
+        "id": 16,
+        "title": "Severability",
+        "content": "If any provision of these terms is found to be invalid or unenforceable, that provision shall be severed and the remaining provisions shall remain in full force and effect."
+      },
+      {
+        "id": 17,
+        "title": "Contact Information",
+        "content": "If you have any questions about these Terms and Conditions, please contact us:\n\nEmail: legal@fitmate.com\nMailing Address: Beauty Vibe, 123 Wellness Street, Health City, HC 12345\nPhone: +1 (555) 123-4567"
+      }
+    ]
+  }
+}

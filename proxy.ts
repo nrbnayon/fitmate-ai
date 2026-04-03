@@ -29,7 +29,7 @@ const AUTH_ROUTES = [
 // ── Standalone public auth-flow page ─────────────────────────────────────────
 // /success is shown after email verification / payment — not a login page,
 // so authenticated users are NOT bounced away from it.
-const PUBLIC_ONLY_ROUTES = ["/success"];
+const PUBLIC_ONLY_ROUTES = ["/success"]; // add more later if needed
 
 // ── Info / legal routes ───────────────────────────────────────────────────────
 // Always accessible to EVERYONE — authenticated or not, any role.
@@ -37,6 +37,7 @@ const PUBLIC_ONLY_ROUTES = ["/success"];
 // but it must remain publicly readable (legal requirement), so we allow it here
 // before any auth check is performed.
 const INFO_ROUTES = [
+  "/privacy",
   "/privacy-policy",
   "/terms", // add page later if needed
   "/about-us", // add page later if needed
