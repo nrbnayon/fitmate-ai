@@ -31,7 +31,7 @@ export default function CommissionTrackingPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <StatsCard
             title="Pending Payouts"
-            value={isLoading ? "..." : `$${summary?.pending_payouts?.toFixed(2) || "0.00"}`}
+            value={isLoading ? "..." : `د.إ ${summary?.pending_payouts?.toFixed(2) || "0.00"}`}
             subtitle="current balance"
             icon={DollarSign}
             iconColor="#BA4E76"
@@ -39,7 +39,7 @@ export default function CommissionTrackingPage() {
           />
           <StatsCard
             title="Total Paid/Withdraw"
-            value={isLoading ? "..." : `$${(summary?.paid_payouts || summary?.total_withdraw || 0).toFixed(2)}`}
+            value={isLoading ? "..." : `د.إ ${(summary?.paid_payouts || summary?.total_withdraw || 0).toFixed(2)}`}
             subtitle="to date"
             icon={CheckCircle2}
             iconColor="#10B981"

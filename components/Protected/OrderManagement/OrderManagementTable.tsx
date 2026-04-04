@@ -84,7 +84,7 @@ export default function OrderManagementTable() {
         key: "total_amount",
         header: "Amount",
         sortable: true,
-        render: (value) => `$${parseFloat(value).toFixed(2)}`,
+        render: (value) => `د.إ ${parseFloat(value).toFixed(2)}`,
       },
       {
         key: "delivery_method",

@@ -110,7 +110,7 @@ export default function ProductsTable() {
     {
       key: "price",
       header: "Price",
-      render: (_, row) => <span>${parseFloat(row.price).toFixed(2)}</span>,
+      render: (_, row) => <span>د.إ {parseFloat(row.price).toFixed(2)}</span>,
       sortable: true,
     },
     {

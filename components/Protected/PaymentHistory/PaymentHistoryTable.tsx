@@ -76,7 +76,7 @@ export default function PaymentHistoryTable() {
         key: "amount",
         header: "Amount",
         sortable: true,
-        render: (value) => `$${parseFloat(value).toFixed(2)}`,
+        render: (value) => `د.إ ${parseFloat(value).toFixed(2)}`,
       },
       {
         key: "transaction_method",
