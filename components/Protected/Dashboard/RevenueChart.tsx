@@ -52,7 +52,7 @@ export function RevenueChart({ data = [] }: RevenueChartProps) {
             <Tooltip 
               contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0px 4px 6px -2px rgba(0, 0, 0, 0.05), 0px 10px 15px -3px rgba(0, 0, 0, 0.1)' }}
               formatter={(value: number | undefined) => [
-                `$${(value || 0).toLocaleString()}`,
+                `د.إ ${(value || 0).toLocaleString()}`,
                 "Revenue",
               ]}
             />

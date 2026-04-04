@@ -108,7 +108,7 @@ export default function PaymentApprovalClient() {
         sortable: true,
         render: (value) => (
           <span className="font-bold text-gray-900">
-            ${parseFloat(value?.toString() || "0").toFixed(2)}
+            د.إ {parseFloat(value?.toString() || "0").toFixed(2)}
           </span>
         ),
       },
@@ -212,7 +212,7 @@ export default function PaymentApprovalClient() {
           <>
             <StatsCard 
               title="Pending Amount" 
-              value={`$${summaryData?.total_pending_amount?.toFixed(2) || "0.00"}`}
+              value={`د.إ ${summaryData?.total_pending_amount?.toFixed(2) || "0.00"}`}
               subtitle={`${summaryData?.total_pending || 0} requests pending`}
               icon={Clock}
               iconColor="#f97316"
@@ -220,7 +220,7 @@ export default function PaymentApprovalClient() {
             />
             <StatsCard 
               title="Completed Amount" 
-              value={`$${summaryData?.total_completed_amount?.toFixed(2) || "0.00"}`}
+              value={`د.إ ${summaryData?.total_completed_amount?.toFixed(2) || "0.00"}`}
               subtitle={`${summaryData?.total_completed || 0} requests completed`}
               icon={CheckCircle2}
               iconColor="#10b981"
@@ -228,7 +228,7 @@ export default function PaymentApprovalClient() {
             />
             <StatsCard 
               title="Total Withdrawals" 
-              value={summaryData?.total_withdrawals?.toString() || "0"}
+              value={`د.إ ${summaryData?.total_withdrawals?.toString() || "0.00"}`}
               subtitle="All time requests"
               icon={DollarSign}
               iconColor="#3b82f6"

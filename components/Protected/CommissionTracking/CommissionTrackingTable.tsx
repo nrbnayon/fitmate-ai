@@ -46,13 +46,13 @@ export default function CommissionTrackingTable({
         key: "total_sales",
         header: "Total Sales",
         sortable: true,
-        render: (value) => `$${value}`,
+        render: (value) => `د.إ ${value}`,
       },
       {
         key: "commission",
         header: "Commission",
         sortable: true,
-        render: (value) => `$${value}`,
+        render: (value) => `د.إ ${value}`,
       },
       // {
       //   key: "progress",

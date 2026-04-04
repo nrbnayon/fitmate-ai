@@ -47,7 +47,7 @@ export function TopCreatorsTable({ creators }: TopCreatorsTableProps) {
         key: "sales",
         header: "Sales",
         render: (_, row: TopCreator) => (
-          <span className="font-medium">${row.sales.toFixed(2)}</span>
+          <span className="font-medium">د.إ {row.sales.toFixed(2)}</span>
         ),
         sortable: true,
       },
@@ -55,7 +55,7 @@ export function TopCreatorsTable({ creators }: TopCreatorsTableProps) {
         key: "commission",
         header: "Commission",
         render: (_, row: TopCreator) => (
-          <span className="font-medium">${row.commission.toFixed(2)}</span>
+          <span className="font-medium">د.إ {row.commission.toFixed(2)}</span>
         ),
         sortable: true,
       },
